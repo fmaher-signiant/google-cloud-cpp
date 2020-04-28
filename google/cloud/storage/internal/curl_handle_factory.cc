@@ -22,6 +22,18 @@ namespace internal {
 std::once_flag default_curl_handle_factory_initialized;
 std::shared_ptr<CurlHandleFactory> default_curl_handle_factory;
 
+void CurlHandleFactory::SetCurlOptions(CURL* handle,
+                                       ChannelOptions const& options) {
+  if (options.ssl_ctx_function() != nullptr) {
+    curl_easy_setopt(handle, CURLOPT_SSL_CTX_FUNCTION,
+                        options.ssl_ctx_function());
+  }
+  if (options.ssl_ctx_data() != nullptr) {
+    curl_easy_setopt(handle, CURLOPT_SSL_CTX_DATA,
+                        options.ssl_ctx_data().get());
+  }
+}
+
 std::shared_ptr<CurlHandleFactory> GetDefaultCurlHandleFactory() {
   std::call_once(default_curl_handle_factory_initialized, [] {
     default_curl_handle_factory = std::make_shared<DefaultCurlHandleFactory>();
@@ -29,8 +41,20 @@ std::shared_ptr<CurlHandleFactory> GetDefaultCurlHandleFactory() {
   return default_curl_handle_factory;
 }
 
+std::shared_ptr<CurlHandleFactory> GetDefaultCurlHandleFactory(
+    ChannelOptions const& options) {
+  if (options.ssl_ctx_function() != nullptr) {
+    // We have to create a new factory if options are specified
+    //  since they might not be the same ones as the last time this was called
+    return std::make_shared<DefaultCurlHandleFactory>(options);
+  }
+  return GetDefaultCurlHandleFactory();
+}
+
 CurlPtr DefaultCurlHandleFactory::CreateHandle() {
-  return CurlPtr(curl_easy_init(), &curl_easy_cleanup);
+  CurlPtr curl(curl_easy_init(), &curl_easy_cleanup);
+  SetCurlOptions(curl.get(), options_);
+  return curl;
 }
 
 void DefaultCurlHandleFactory::CleanupHandle(CurlPtr&& h) {
@@ -50,8 +74,9 @@ CurlMulti DefaultCurlHandleFactory::CreateMultiHandle() {
 
 void DefaultCurlHandleFactory::CleanupMultiHandle(CurlMulti&& m) { m.reset(); }
 
-PooledCurlHandleFactory::PooledCurlHandleFactory(std::size_t maximum_size)
-    : maximum_size_(maximum_size) {
+PooledCurlHandleFactory::PooledCurlHandleFactory(std::size_t maximum_size,
+                                                 ChannelOptions options)
+    : maximum_size_(maximum_size), options_(std::move(options)) {
   handles_.reserve(maximum_size);
   multi_handles_.reserve(maximum_size);
 }
@@ -72,9 +97,13 @@ CurlPtr PooledCurlHandleFactory::CreateHandle() {
     // Clear all the options in the handle so we do not leak its previous state.
     (void)curl_easy_reset(handle);
     handles_.pop_back();
-    return CurlPtr(handle, &curl_easy_cleanup);
+    CurlPtr curl(handle, &curl_easy_cleanup);
+    SetCurlOptions(curl.get(), options_);
+    return curl;
   }
-  return CurlPtr(curl_easy_init(), &curl_easy_cleanup);
+  CurlPtr curl(curl_easy_init(), &curl_easy_cleanup);
+  SetCurlOptions(curl.get(), options_);
+  return curl;
 }
 
 void PooledCurlHandleFactory::CleanupHandle(CurlPtr&& h) {

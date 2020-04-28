@@ -39,8 +39,13 @@ class CurlHandleFactory {
   virtual void CleanupMultiHandle(CurlMulti&&) = 0;
 
   virtual std::string LastClientIpAddress() const = 0;
+
+ protected:
+  void SetCurlOptions(CURL* handle, ChannelOptions const& options);
 };
 
+std::shared_ptr<CurlHandleFactory> GetDefaultCurlHandleFactory(
+    ChannelOptions const& options);
 std::shared_ptr<CurlHandleFactory> GetDefaultCurlHandleFactory();
 
 /**
@@ -53,6 +58,8 @@ std::shared_ptr<CurlHandleFactory> GetDefaultCurlHandleFactory();
 class DefaultCurlHandleFactory : public CurlHandleFactory {
  public:
   DefaultCurlHandleFactory() = default;
+  DefaultCurlHandleFactory(ChannelOptions options)
+      : options_(std::move(options)) {}
 
   CurlPtr CreateHandle() override;
   void CleanupHandle(CurlPtr&&) override;
@@ -68,6 +75,7 @@ class DefaultCurlHandleFactory : public CurlHandleFactory {
  private:
   mutable std::mutex mu_;
   std::string last_client_ip_address_;
+  ChannelOptions options_;
 };
 
 /**
@@ -78,7 +86,7 @@ class DefaultCurlHandleFactory : public CurlHandleFactory {
  */
 class PooledCurlHandleFactory : public CurlHandleFactory {
  public:
-  explicit PooledCurlHandleFactory(std::size_t maximum_size);
+  explicit PooledCurlHandleFactory(std::size_t maximum_size, ChannelOptions options);
   ~PooledCurlHandleFactory() override;
 
   CurlPtr CreateHandle() override;
@@ -98,6 +106,7 @@ class PooledCurlHandleFactory : public CurlHandleFactory {
   std::vector<CURL*> handles_;
   std::vector<CURLM*> multi_handles_;
   std::string last_client_ip_address_;
+  ChannelOptions options_;
 };
 
 }  // namespace internal

@@ -46,10 +46,11 @@ extern "C" void CurlShareUnlockCallback(CURL*, curl_lock_data data,
 std::shared_ptr<CurlHandleFactory> CreateHandleFactory(
     ClientOptions const& options) {
   if (options.connection_pool_size() == 0) {
-    return std::make_shared<DefaultCurlHandleFactory>();
+    return std::make_shared<DefaultCurlHandleFactory>(
+        options.channel_options());
   }
   return std::make_shared<PooledCurlHandleFactory>(
-      options.connection_pool_size());
+      options.connection_pool_size(), options.channel_options());
 }
 
 std::string XmlMapPredefinedAcl(std::string const& acl) {
@@ -130,7 +131,7 @@ Status CurlClient::SetupBuilderCommon(CurlRequestBuilder& builder,
       .SetCurlShare(share_.get())
       .AddHeader(auth_header.value())
       .AddHeader("x-goog-api-client: " + x_goog_api_client());
-    
+
   builder.SetProxyOptions(options_.proxy_options());
   return Status();
 }

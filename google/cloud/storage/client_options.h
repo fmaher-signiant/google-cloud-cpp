@@ -24,6 +24,20 @@ namespace cloud {
 namespace storage {
 inline namespace STORAGE_CLIENT_NS {
 
+  // Inspired by similarly named class at the current HEAD of master
+  class ChannelOptions {
+   public:
+    void* ssl_ctx_function() const { return ssl_ctx_function_; }
+    std::shared_ptr<void> ssl_ctx_data() const { return ssl_ctx_data_; }
+
+   private:
+     // Signiant patched properties to help add system truststore
+     // ssl_ctx_function_ should have signature:
+     //  CURLcode ssl_ctx_callback(CURL *curl, void *ssl_ctx, void *userptr)
+     void* ssl_ctx_function_;
+     std::shared_ptr<void> ssl_ctx_data_;
+  };
+
   // Newer versions of libcurl support URL parsing, which could reduce the number of fields in ProxyOptions:
   // https://curl.haxx.se/libcurl/c/parseurl.html
   struct ProxyOptions {
@@ -175,6 +189,9 @@ class ClientOptions {
     return *this;
   }
 
+  ChannelOptions& channel_options() { return channel_options_; }
+  ChannelOptions const& channel_options() const { return channel_options_; }
+
   //@{
   /**
    * Control the maximum amount of time allowed for "stalls" during a download.
@@ -224,6 +241,7 @@ class ClientOptions {
   std::size_t maximum_socket_send_size_ = 0;
   std::chrono::seconds download_stall_timeout_;
   struct ProxyOptions proxy_options_;
+  ChannelOptions channel_options_;
 };
 }  // namespace STORAGE_CLIENT_NS
 }  // namespace storage
