@@ -1,0 +1,22 @@
+ 
+if (NOT TARGET ZLIB::ZLIB)
+	set (ZLIB_DIR "${GCS_THRDPARTYHOME}/zlib" CACHE INTERNAL "")
+	set (ZLIB_INCLUDE_DIR "${ZLIB_DIR}/include" CACHE INTERNAL "" )
+	if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+		set( ZLIB_LIBRARY "${ZLIB_DIR}/lib/zlibstatic.lib" CACHE INTERNAL "")
+	else () # OSX/Linux
+		set( ZLIB_LIBRARY "${ZLIB_DIR}/lib/libz.a" CACHE INTERNAL "")
+	endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	message(STATUS "using ZLIB_DIR: ${ZLIB_DIR}")
+
+	message(STATUS "defining zlib")
+	add_library(ZLIB::ZLIB UNKNOWN IMPORTED)
+	set_property(TARGET ZLIB::ZLIB
+				 APPEND
+				 PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+						  "${ZLIB_INCLUDE_DIR}")
+	set_property(TARGET ZLIB::ZLIB
+				 APPEND
+				 PROPERTY IMPORTED_LOCATION "${ZLIB_LIBRARY}")
+endif (NOT TARGET ZLIB::ZLIB)
+	

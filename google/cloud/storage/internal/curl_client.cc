@@ -130,6 +130,8 @@ Status CurlClient::SetupBuilderCommon(CurlRequestBuilder& builder,
       .SetCurlShare(share_.get())
       .AddHeader(auth_header.value())
       .AddHeader("x-goog-api-client: " + x_goog_api_client());
+    
+  builder.SetProxyOptions(options_.proxy_options());
   return Status();
 }
 

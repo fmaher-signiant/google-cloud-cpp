@@ -14,7 +14,41 @@
 # limitations under the License.
 # ~~~
 
-find_package(google_cloud_cpp_common CONFIG REQUIRED)
+include(GoogleCloudCppCommon)
+
+# Define an interface library, i.e., a library that really has no sources, and
+# add public target options to it.  The targets then use the library via
+# target_link_libraries(target PRIVATE bigtable_common_options), which
+# implicitly adds the options to those targets, but does *not* add the options
+# to any targets that depend on them.  This is a CMake idiom to add options to
+# targets without having to painfully set special variables, it also allows
+# users to add more common options without having to touch the code.
+add_library(google_cloud_cpp_common_options INTERFACE)
+google_cloud_cpp_add_common_options(google_cloud_cpp_common_options)
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	set(GCS_COMMON_LIB_RELEASE "${GCS_COMMON_LIB_DIR}/Release/lib/google_cloud_cpp_common.lib" CACHE INTERNAL "")
+	set(GCS_COMMON_LIB_DEBUG "${GCS_COMMON_LIB_DIR}/Debug/lib/google_cloud_cpp_common_d.lib" CACHE INTERNAL "")
+else() #OSX and Linux
+	set(GCS_COMMON_LIB_RELEASE "${GCS_COMMON_LIB_DIR}/Release/lib/libgoogle_cloud_cpp_common.a" CACHE INTERNAL "")
+	set(GCS_COMMON_LIB_DEBUG "${GCS_COMMON_LIB_DIR}/Debug/lib/libgoogle_cloud_cpp_common_d.a" CACHE INTERNAL "")
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+message(STATUS "GCS_COMMON_INCLUDE_DIR is: ${GCS_COMMON_INCLUDE_DIR}")
+
+add_library(google_cloud_cpp_common UNKNOWN IMPORTED)
+set_property(
+            TARGET google_cloud_cpp_common
+            APPEND
+            PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${GCS_COMMON_INCLUDE_DIR}")
+set_property(
+            TARGET google_cloud_cpp_common
+            APPEND
+            PROPERTY IMPORTED_LOCATION_RELEASE "${GCS_COMMON_LIB_RELEASE}")
+set_property(
+            TARGET google_cloud_cpp_common
+            APPEND
+            PROPERTY IMPORTED_LOCATION_DEBUG "${GCS_COMMON_LIB_DEBUG}")
+
 
 # This should be included from the top level CMakeLists file
 set(STORAGE_CLIENT_VERSION_MAJOR 1)
@@ -39,16 +73,17 @@ set(DOXYGEN_EXCLUDE_PATTERNS
     "*/google/cloud/storage/*_test.cc")
 set(DOXYGEN_EXCLUDE_SYMBOLS "internal")
 
-include(GoogleCloudCppCommon)
-
 include(IncludeNlohmannJson)
-find_package(Crc32c)
+include(IncludeCrc32c)
 
 # Generate the version information from the CMake values.
 configure_file(version_info.h.in ${CMAKE_CURRENT_SOURCE_DIR}/version_info.h)
 
 # Export the version information for Bazel.
 include(CreateBazelConfig)
+
+# Enable unit tests
+include(CTest)
 
 # Define an interface library, i.e., a library that really has no sources, and
 # add public target options to it.  The targets then use the library via
@@ -60,12 +95,9 @@ include(CreateBazelConfig)
 add_library(storage_common_options INTERFACE)
 google_cloud_cpp_add_common_options(storage_common_options)
 
-# Enable unit tests
-include(CTest)
-
+include (IncludeZlib)
+include(IncludeOpenSSL)
 include(FindCurlWithTargets)
-find_package(OpenSSL REQUIRED)
-find_package(ZLIB REQUIRED)
 
 # the client library
 add_library(
@@ -226,17 +258,25 @@ add_library(
     well_known_headers.h
     well_known_headers.cc
     well_known_parameters.h)
-target_link_libraries(
-    storage_client
-    PUBLIC google_cloud_cpp_common
+
+set(STORAGE_CLIENT_LIBS google_cloud_cpp_common
            nlohmann_json
            Crc32c::crc32c
            CURL::libcurl
            Threads::Threads
            OpenSSL::SSL
            OpenSSL::Crypto
-           ZLIB::ZLIB
+           ZLIB::ZLIB CACHE INTERNAL "")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows") 
+target_link_libraries(storage_client
+    PUBLIC ${STORAGE_CLIENT_LIBS}
     PRIVATE storage_common_options)
+else() # OSX/Linux
+target_link_libraries(storage_client
+		PUBLIC ${STORAGE_CLIENT_LIBS}
+			   dl
+		PRIVATE storage_common_options)
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 target_include_directories(
     storage_client
     PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
@@ -253,7 +293,11 @@ if (MSVC)
         SOURCE internal/object_requests.cc
         APPEND_STRING
         PROPERTY COMPILE_DEFINITIONS "_CRT_SECURE_NO_WARNINGS")
-endif ()
+	
+	# while we are here, set the curl static lib preprocessor
+    # not sure why setting this on the library when it's loaded has no effect
+    target_compile_definitions(storage_client PUBLIC "CURL_STATICLIB")
+endif (MSVC)
 
 # GCC-7.3 (the default GCC version on Ubuntu:18.04) issues a warning (a member
 # variable may be used without being initialized), in this file. GCC-8.0 no
@@ -281,7 +325,29 @@ create_bazel_config(storage_client)
 google_cloud_cpp_add_clang_tidy(storage_client)
 
 if (BUILD_TESTING)
-    find_package(google_cloud_cpp_testing CONFIG REQUIRED)
+
+	if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+		set(GCS_TESTING_LIB_RELEASE "${GCS_COMMON_LIB_DIR}/Release/lib/google_cloud_cpp_testing.lib" CACHE INTERNAL "")
+		set(GCS_TESTING_LIB_DEBUG "${GCS_COMMON_LIB_DIR}/Debug/lib/google_cloud_cpp_testing_d.lib" CACHE INTERNAL "")
+	else() #OSX and Linux
+		set(GCS_TESTING_LIB_RELEASE "${GCS_COMMON_LIB_DIR}/Release/lib/libgoogle_cloud_cpp_testing.a" CACHE INTERNAL "")
+		set(GCS_TESTING_LIB_DEBUG "${GCS_COMMON_LIB_DIR}/Debug/lib/libgoogle_cloud_cpp_testing_d.a" CACHE INTERNAL "")
+	endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	
+	add_library(google_cloud_cpp_testing UNKNOWN IMPORTED)
+	set_property(
+				TARGET google_cloud_cpp_testing
+				APPEND
+				PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${GCS_COMMON_INCLUDE_DIR}")
+	set_property(
+				TARGET google_cloud_cpp_testing
+				APPEND
+				PROPERTY IMPORTED_LOCATION_RELEASE "${GCS_TESTING_LIB_RELEASE}")
+	set_property(
+				TARGET google_cloud_cpp_testing
+				APPEND
+				PROPERTY IMPORTED_LOCATION_DEBUG "${GCS_TESTING_LIB_DEBUG}")
+			
 
     add_library(
         storage_client_testing
@@ -430,7 +496,7 @@ if (BUILD_TESTING)
     add_subdirectory(tests)
 endif ()
 
-add_subdirectory(benchmarks)
+#add_subdirectory(benchmarks)
 
 if (GOOGLE_CLOUD_CPP_ENABLE_CXX_EXCEPTIONS)
     # The examples are more readable if we use exceptions for error handling. We
@@ -452,7 +518,7 @@ install(EXPORT storage-targets
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/storage_client")
 
 install(
-    TARGETS storage_client
+    TARGETS storage_client crc32c_lib
     EXPORT storage-targets
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
             COMPONENT google_cloud_cpp_runtime

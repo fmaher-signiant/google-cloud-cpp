@@ -26,7 +26,7 @@ if (NOT MSVC)
     check_cxx_compiler_flag(-Wextra GOOGLE_CLOUD_CPP_COMPILER_SUPPORTS_WEXTRA)
     check_cxx_compiler_flag(-Werror GOOGLE_CLOUD_CPP_COMPILER_SUPPORTS_WERROR)
 else ()
-    check_cxx_compiler_flag("/std:c++latest"
+    check_cxx_compiler_flag("/std:c++14"
                             GOOGLE_CLOUD_CPP_COMPILER_SUPPORTS_CPP_LATEST)
 endif ()
 
@@ -143,7 +143,7 @@ endif ()
 
 function (google_cloud_cpp_add_common_options target)
     if (GOOGLE_CLOUD_CPP_COMPILER_SUPPORTS_CPP_LATEST)
-        target_compile_options(${target} INTERFACE "/std:c++latest")
+        target_compile_options(${target} INTERFACE "/std:c++14")
     endif ()
     if (GOOGLE_CLOUD_CPP_COMPILER_SUPPORTS_WALL)
         target_compile_options(${target} INTERFACE "-Wall")

@@ -46,6 +46,8 @@ class CurlRequest {
   CurlRequest(CurlRequest&& rhs) noexcept(false)
       : url_(std::move(rhs.url_)),
         headers_(std::move(rhs.headers_)),
+        proxyHeaders_(std::move(rhs.proxyHeaders_)),
+        proxyOptions_(std::move(rhs.proxyOptions_)),
         user_agent_(std::move(rhs.user_agent_)),
         response_payload_(std::move(rhs.response_payload_)),
         received_headers_(std::move(rhs.received_headers_)),
@@ -59,6 +61,8 @@ class CurlRequest {
   CurlRequest& operator=(CurlRequest&& rhs) noexcept(false) {
     url_ = std::move(rhs.url_);
     headers_ = std::move(rhs.headers_);
+    proxyHeaders_ = std::move(rhs.proxyHeaders_);
+    proxyOptions_ = std::move(rhs.proxyOptions_);
     user_agent_ = std::move(rhs.user_agent_);
     response_payload_ = std::move(rhs.response_payload_);
     received_headers_ = std::move(rhs.received_headers_);
@@ -88,6 +92,8 @@ class CurlRequest {
 
   std::string url_;
   CurlHeaders headers_;
+  CurlHeaders proxyHeaders_;
+  ProxyOptions proxyOptions_;
   std::string user_agent_;
   std::string response_payload_;
   CurlReceivedHeaders received_headers_;

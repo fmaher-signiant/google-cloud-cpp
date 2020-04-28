@@ -23,6 +23,18 @@ namespace google {
 namespace cloud {
 namespace storage {
 inline namespace STORAGE_CLIENT_NS {
+
+  // Newer versions of libcurl support URL parsing, which could reduce the number of fields in ProxyOptions:
+  // https://curl.haxx.se/libcurl/c/parseurl.html
+  struct ProxyOptions {
+    std::string scheme;
+    std::string username;
+    std::string password;
+    std::string host;
+    uint16_t    port;
+    std::vector<std::string> headers;
+  };
+
 /**
  * Describes the configuration for a `storage::Client` object.
  *
@@ -182,6 +194,14 @@ class ClientOptions {
   }
   //@}
 
+  ProxyOptions proxy_options() const {
+    return proxy_options_;
+  }
+  ClientOptions& set_proxy_options(const ProxyOptions& opts) {
+      proxy_options_ = opts;
+      return *this;
+  }
+
  private:
   void SetupFromEnvironment();
 
@@ -203,6 +223,7 @@ class ClientOptions {
   std::size_t maximum_socket_recv_size_ = 0;
   std::size_t maximum_socket_send_size_ = 0;
   std::chrono::seconds download_stall_timeout_;
+  struct ProxyOptions proxy_options_;
 };
 }  // namespace STORAGE_CLIENT_NS
 }  // namespace storage

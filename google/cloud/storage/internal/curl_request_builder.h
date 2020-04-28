@@ -134,6 +134,12 @@ class CurlRequestBuilder {
   /// Adds request headers.
   CurlRequestBuilder& AddHeader(std::string const& header);
 
+  // Adds proxy options.
+  CurlRequestBuilder& SetProxyOptions(const ProxyOptions& opts);
+
+  /// Adds proxy request headers.
+  CurlRequestBuilder& AddProxyHeader(std::string const& header);
+
   /// Adds a parameter for a request.
   CurlRequestBuilder& AddQueryParameter(std::string const& key,
                                         std::string const& value);
@@ -167,6 +173,8 @@ class CurlRequestBuilder {
 
   CurlHandle handle_;
   CurlHeaders headers_;
+  CurlHeaders proxyHeaders_;
+  ProxyOptions proxyOptions_;
 
   std::string url_;
   char const* query_parameter_separator_;

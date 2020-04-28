@@ -93,54 +93,59 @@ function (google_cloud_cpp_transfer_library_properties target source)
 endfunction ()
 
 include(CTest)
-if (TARGET GTest::gmock)
-    # GTest::gmock is already defined, do not define it again.
-elseif (NOT BUILD_TESTING AND NOT GOOGLE_CLOUD_CPP_TESTING_UTIL_ENABLE_INSTALL)
+if (NOT BUILD_TESTING AND NOT GOOGLE_CLOUD_CPP_TESTING_UTIL_ENABLE_INSTALL)
     # Tests are turned off via -DBUILD_TESTING, do not load the googletest or
     # googlemock dependency.
 else ()
-    # Try to find the config package first. If that is not found
-    find_package(GTest CONFIG QUIET)
-    find_package(GMock CONFIG QUIET)
-    if (NOT GTest_FOUND)
-        find_package(GTest MODULE REQUIRED)
+    if (NOT TARGET GMock::gmock)
+	
+	   	# use gmock from umpire
+		set (GMOCK_DIR "${GCS_THRDPARTYHOME}/gmock" CACHE INTERNAL "")
+		set (GMOCK_INCLUDE_DIR "${GMOCK_DIR}/include" CACHE INTERNAL "" )
+		set (GMOCK_LIB_DIR "${GMOCK_DIR}/lib" CACHE INTERNAL "" )
+		message(STATUS "using GMOCK_DIR: ${GMOCK_DIR}")
 
-        google_cloud_cpp_create_googletest_aliases()
-
-        # The FindGTest module finds GTest by default, but does not search for
-        # GMock, though they are usually installed together. Define the
-        # GTest::gmock* targets manually.
-        find_path(
-            GMOCK_INCLUDE_DIR gmock/gmock.h
-            HINTS $ENV{GTEST_ROOT}/include ${GTEST_ROOT}/include
-            DOC "The GoogleTest Mocking Library headers")
-        if ("${GMOCK_INCLUDE_DIR}" MATCHES "-NOTFOUND")
-            message(
-                FATAL_ERROR "Cannot find gmock headers ${GMOCK_INCLUDE_DIR}.")
-        endif ()
-        mark_as_advanced(GMOCK_INCLUDE_DIR)
-
-        add_library(GTest::gmock UNKNOWN IMPORTED)
-        google_cloud_cpp_gmock_library_import_location(GTest::gmock gmock)
-        set_target_properties(
-            GTest::gmock
-            PROPERTIES IMPORTED_LINK_INTERFACE_LIBRARIES
-                       "GTest::GTest;Threads::Threads"
-                       INTERFACE_INCLUDE_DIRECTORIES "${GMOCK_INCLUDE_DIRS}")
-
-        add_library(GTest::gmock_main UNKNOWN IMPORTED)
-        google_cloud_cpp_gmock_library_import_location(GTest::gmock_main
-                                                       gmock_main)
-        set_target_properties(
-            GTest::gmock_main
-            PROPERTIES IMPORTED_LINK_INTERFACE_LIBRARIES
-                       "GTest::gmock;Threads::Threads"
-                       INTERFACE_INCLUDE_DIRECTORIES "${GMOCK_INCLUDE_DIRS}")
-    endif ()
-
-    if (NOT TARGET GTest::gmock AND TARGET GMock::gmock)
-        google_cloud_cpp_transfer_library_properties(GTest::gmock GMock::gmock)
-        google_cloud_cpp_transfer_library_properties(GTest::gmock_main
-                                                     GMock::gmock_main)
+		# Use aliases because: The target name "GTest::gtest" is reserved or not valid for certain CMake features, 
+		#	such as generator expressions, and may result in undefined behavior.		
+		add_library(GTest_gtest INTERFACE)
+		add_library(GTest_gtest_main INTERFACE)
+		add_library(GTest_gmock INTERFACE)
+		add_library(GTest_gmock_main INTERFACE)
+   
+		target_include_directories(GTest_gtest INTERFACE "${GMOCK_INCLUDE_DIR}")
+		target_include_directories(GTest_gtest_main INTERFACE "${GMOCK_INCLUDE_DIR}")
+		target_include_directories(GTest_gmock INTERFACE "${GMOCK_INCLUDE_DIR}")
+		target_include_directories(GTest_gmock_main INTERFACE "${GMOCK_INCLUDE_DIR}")
+		
+		if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+			target_link_libraries(GTest_gtest INTERFACE $<$<CONFIG:Debug>:${GMOCK_LIB_DIR}/gtestd.lib>$<$<CONFIG:Release>:${GMOCK_LIB_DIR}/gtest.lib> )
+			target_link_libraries(GTest_gtest_main INTERFACE $<$<CONFIG:Debug>:${GMOCK_LIB_DIR}/gtest_maind.lib>$<$<CONFIG:Release>:${GMOCK_LIB_DIR}/gtest_main.lib>)
+			target_link_libraries(GTest_gmock INTERFACE 
+				$<$<CONFIG:Debug>:${GMOCK_LIB_DIR}/gmockd.lib>$<$<CONFIG:Release>:${GMOCK_LIB_DIR}/gmock.lib>
+				GTest_gtest
+				GTest_gtest_main
+				Threads::Threads)
+			target_link_libraries(GTest_gmock_main INTERFACE 
+				$<$<CONFIG:Debug>:${GMOCK_LIB_DIR}/gmock_maind.lib>$<$<CONFIG:Release>:${GMOCK_LIB_DIR}/gmock_main.lib>
+				GTest_gmock 
+				Threads::Threads)
+		else () # OSX/Linux
+			target_link_libraries(GTest_gtest INTERFACE ${GMOCK_LIB_DIR}/gtest.a)
+			target_link_libraries(GTest_gtest_main INTERFACE ${GMOCK_LIB_DIR}/gtest_main.a)
+			target_link_libraries(GTest_gmock INTERFACE 
+				${GMOCK_LIB_DIR}/gmock.a
+				GTest_gtest
+				GTest_gtest_main
+				Threads::Threads)
+			target_link_libraries(GTest_gmock_main INTERFACE 
+				${GMOCK_LIB_DIR}/gmock_main.a
+				 GTest_gmock
+				 Threads::Threads)
+		endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+		
+		add_library(GTest::gtest ALIAS GTest_gtest)
+		add_library(GTest::gtest_main ALIAS GTest_gtest_main)
+		add_library(GTest::gmock ALIAS GTest_gmock)
+		add_library(GTest::gmock_main ALIAS GTest_gmock_main)
     endif ()
 endif ()

@@ -50,6 +50,8 @@ class CurlDownloadRequest : public ObjectReadSource {
   CurlDownloadRequest(CurlDownloadRequest&& rhs) noexcept(false)
       : url_(std::move(rhs.url_)),
         headers_(std::move(rhs.headers_)),
+        proxyHeaders_(std::move(rhs.proxyHeaders_)),
+        proxyOptions_(std::move(rhs.proxyOptions_)),
         payload_(std::move(rhs.payload_)),
         user_agent_(std::move(rhs.user_agent_)),
         logging_enabled_(rhs.logging_enabled_),
@@ -73,6 +75,8 @@ class CurlDownloadRequest : public ObjectReadSource {
   CurlDownloadRequest& operator=(CurlDownloadRequest&& rhs) noexcept {
     url_ = std::move(rhs.url_);
     headers_ = std::move(rhs.headers_);
+    proxyHeaders_ = std::move(rhs.proxyHeaders_);
+    proxyOptions_ = std::move(rhs.proxyOptions_);
     payload_ = std::move(rhs.payload_);
     user_agent_ = std::move(rhs.user_agent_);
     logging_enabled_ = rhs.logging_enabled_;
@@ -138,6 +142,8 @@ class CurlDownloadRequest : public ObjectReadSource {
 
   std::string url_;
   CurlHeaders headers_;
+  CurlHeaders proxyHeaders_;
+  ProxyOptions proxyOptions_;
   std::string payload_;
   std::string user_agent_;
   CurlReceivedHeaders received_headers_;

@@ -31,6 +31,7 @@ CurlRequestBuilder::CurlRequestBuilder(
     : factory_(std::move(factory)),
       handle_(factory_->CreateHandle()),
       headers_(nullptr, &curl_slist_free_all),
+      proxyHeaders_(nullptr, &curl_slist_free_all),
       url_(std::move(base_url)),
       query_parameter_separator_("?"),
       logging_enabled_(false),
@@ -41,6 +42,8 @@ CurlRequest CurlRequestBuilder::BuildRequest() {
   CurlRequest request;
   request.url_ = std::move(url_);
   request.headers_ = std::move(headers_);
+  request.proxyHeaders_ = std::move(proxyHeaders_);
+  request.proxyOptions_ = std::move(proxyOptions_);
   request.user_agent_ = user_agent_prefix_ + UserAgentSuffix();
   request.handle_ = std::move(handle_);
   request.factory_ = std::move(factory_);
@@ -56,6 +59,8 @@ CurlDownloadRequest CurlRequestBuilder::BuildDownloadRequest(
   CurlDownloadRequest request;
   request.url_ = std::move(url_);
   request.headers_ = std::move(headers_);
+  request.proxyHeaders_ = std::move(proxyHeaders_);
+  request.proxyOptions_ = std::move(proxyOptions_);
   request.user_agent_ = user_agent_prefix_ + UserAgentSuffix();
   request.payload_ = std::move(payload);
   request.handle_ = std::move(handle_);
@@ -84,6 +89,22 @@ CurlRequestBuilder& CurlRequestBuilder::AddHeader(std::string const& header) {
   auto new_header = curl_slist_append(headers_.get(), header.c_str());
   (void)headers_.release();
   headers_.reset(new_header);
+  return *this;
+}
+
+CurlRequestBuilder& CurlRequestBuilder::SetProxyOptions(const ProxyOptions& opts) {
+  proxyOptions_ = opts;
+  for (const std::string &header : opts.headers) {
+    AddProxyHeader(header);
+  }
+  return *this;
+}
+
+CurlRequestBuilder& CurlRequestBuilder::AddProxyHeader(std::string const& header) {
+  ValidateBuilderState(__func__);
+  auto new_header = curl_slist_append(proxyHeaders_.get(), header.c_str());
+  (void)proxyHeaders_.release();
+  proxyHeaders_.reset(new_header);
   return *this;
 }
 

@@ -163,6 +163,12 @@ TEST(CurlRequestTest, CheckResponseHeaders) {
       storage::internal::GetDefaultCurlHandleFactory());
   request.AddHeader("Accept: application/json");
   request.AddHeader("charsets: utf-8");
+  ProxyOptions opts;
+  opts.scheme = "http";
+  opts.host = "127.0.0.1";
+  opts.port = 8443;
+  opts.headers.push_back("x-signiant-gcs-bucket: bucket-name");
+  request.SetProxyOptions(opts);
 
   auto response = request.BuildRequest().MakeRequest(std::string{});
   ASSERT_STATUS_OK(response);
@@ -171,6 +177,7 @@ TEST(CurlRequestTest, CheckResponseHeaders) {
   EXPECT_EQ("", response->headers.find("x-test-empty")->second);
   EXPECT_LE(1U, response->headers.count("x-test-foo"));
   EXPECT_EQ("bar", response->headers.find("x-test-foo")->second);
+  EXPECT_EQ(0, response->headers.count("x-signiant-gcs-bucket"));
 }
 
 /// @test Verify the user agent header.
@@ -398,6 +405,13 @@ TEST(CurlRequestTest, Logging) {
     request.AddHeader("charsets: utf-8");
     request.AddHeader("x-test-header: foo");
 
+    ProxyOptions opts;
+    opts.scheme = "http";
+    opts.host = "127.0.0.1";
+    opts.port = 8443;
+    opts.headers.push_back("x-signiant-gcs-bucket: bucket-name");
+    request.SetProxyOptions(opts);
+
     auto response = request.BuildRequest().MakeRequest("this is some text");
     ASSERT_STATUS_OK(response);
     EXPECT_EQ(200, response->status_code);
@@ -408,6 +422,8 @@ TEST(CurlRequestTest, Logging) {
   // Verify the URL, and headers, and payload are logged.
   EXPECT_THAT(log_messages, HasSubstr("/post?foo=bar"));
   EXPECT_THAT(log_messages, HasSubstr("x-test-header: foo"));
+  EXPECT_THAT(log_messages, HasSubstr("x-signiant-gcs-bucket: bucket-name"));
+
   EXPECT_THAT(log_messages, HasSubstr("this is some text"));
   EXPECT_THAT(log_messages, HasSubstr("curl(Info)"));
   EXPECT_THAT(log_messages, HasSubstr("curl(Send Header)"));

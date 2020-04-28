@@ -20,7 +20,9 @@ namespace cloud {
 namespace storage {
 inline namespace STORAGE_CLIENT_NS {
 namespace internal {
-CurlRequest::CurlRequest() : headers_(nullptr, &curl_slist_free_all) {}
+CurlRequest::CurlRequest() :
+  headers_(nullptr, &curl_slist_free_all),
+  proxyHeaders_(nullptr, &curl_slist_free_all) {}
 
 StatusOr<HttpResponse> CurlRequest::MakeRequest(std::string const& payload) {
   if (!payload.empty()) {
@@ -43,6 +45,16 @@ StatusOr<HttpResponse> CurlRequest::MakeRequest(std::string const& payload) {
 void CurlRequest::ResetOptions() {
   handle_.SetOption(CURLOPT_URL, url_.c_str());
   handle_.SetOption(CURLOPT_HTTPHEADER, headers_.get());
+  if (proxyOptions_.scheme.size() > 0 && proxyOptions_.host.size() > 0) {
+    handle_.SetOption(CURLOPT_PROXY, std::string(proxyOptions_.scheme + "://" + proxyOptions_.host).c_str());
+    handle_.SetOption(CURLOPT_PROXYPORT, (long)proxyOptions_.port);
+    handle_.SetOption(CURLOPT_PROXYUSERNAME, proxyOptions_.username.c_str());
+    handle_.SetOption(CURLOPT_PROXYPASSWORD, proxyOptions_.password.c_str());
+    handle_.SetOption(CURLOPT_PROXYHEADER, proxyHeaders_.get());
+  } else {
+    // Disable the use of a proxy, even if there is an environment variable set for it.
+    handle_.SetOption(CURLOPT_PROXY, "");
+  }
   handle_.SetOption(CURLOPT_USERAGENT, user_agent_.c_str());
   handle_.SetOption(CURLOPT_NOSIGNAL, 1);
   handle_.SetWriterCallback(
