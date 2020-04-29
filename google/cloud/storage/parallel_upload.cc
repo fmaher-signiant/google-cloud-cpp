@@ -111,7 +111,7 @@ ParallelUploadPersistentState::FromString(std::string const& json_rep) {
     return Status(StatusCode::kInternal,
                   "Parallel upload state's 'destination' is not a string.");
   }
-  res.destination_object_name = destination_json;
+  res.destination_object_name = static_cast<std::string>(destination_json);
   if (json.count("expected_generation") != 1) {
     return Status(
         StatusCode::kInternal,
