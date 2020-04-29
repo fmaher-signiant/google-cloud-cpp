@@ -24,17 +24,32 @@ namespace cloud {
 namespace storage {
 inline namespace STORAGE_CLIENT_NS {
 
+// Cannot import Curl namespace so we use void ptr
+typedef int (*ssl_ctx_callback)(void *curl,    /* curl handle ptr */
+                                void *ssl_ctx, /* actually an OpenSSL SSL_CTX */
+                                void *userptr); /* ssl_ctx_data */
+
   // Inspired by similarly named class at the current HEAD of master
   class ChannelOptions {
    public:
-    void* ssl_ctx_function() const { return ssl_ctx_function_; }
+    ssl_ctx_callback* ssl_ctx_function() const { return ssl_ctx_function_; }
     std::shared_ptr<void> ssl_ctx_data() const { return ssl_ctx_data_; }
+
+    ChannelOptions& set_ssl_ctx_function(ssl_ctx_callback* ssl_ctx_function) {
+      ssl_ctx_function_ = ssl_ctx_function;
+      return *this;
+    }
+
+    ChannelOptions& set_ssl_ctx_data(std::shared_ptr<void> &ssl_ctx_data) {
+      ssl_ctx_data_ = ssl_ctx_data;
+      return *this;
+    }
 
    private:
      // Signiant patched properties to help add system truststore
      // ssl_ctx_function_ should have signature:
      //  CURLcode ssl_ctx_callback(CURL *curl, void *ssl_ctx, void *userptr)
-     void* ssl_ctx_function_;
+     ssl_ctx_callback* ssl_ctx_function_;
      std::shared_ptr<void> ssl_ctx_data_;
   };
 
@@ -67,7 +82,10 @@ inline namespace STORAGE_CLIENT_NS {
  */
 class ClientOptions {
  public:
-  explicit ClientOptions(std::shared_ptr<oauth2::Credentials> credentials);
+  explicit ClientOptions(std::shared_ptr<oauth2::Credentials> credentials)
+      : ClientOptions(credentials, {}) {}
+  ClientOptions(std::shared_ptr<oauth2::Credentials> credentials,
+                ChannelOptions channel_options);
 
   /**
    * Creates a `ClientOptions` with Google Application Default %Credentials.
