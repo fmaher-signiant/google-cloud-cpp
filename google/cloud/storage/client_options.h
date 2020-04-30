@@ -24,32 +24,29 @@ namespace cloud {
 namespace storage {
 inline namespace STORAGE_CLIENT_NS {
 
-// Cannot import Curl namespace so we use void ptr
-typedef int (*ssl_ctx_callback)(void *curl,    /* curl handle ptr */
-                                void *ssl_ctx, /* actually an OpenSSL SSL_CTX */
-                                void *userptr); /* ssl_ctx_data */
+// Cannot import Curl namespace so we use void pointers, signature should be:
+//  CURLcode ssl_ctx_callback(CURL *curl, void *ssl_ctx, void *ssl_ctx_data)
+typedef int (*ssl_ctx_callback)(void *curl, void *ssl_ctx, void *userptr);
 
   // Inspired by similarly named class at the current HEAD of master
   class ChannelOptions {
    public:
-    ssl_ctx_callback* ssl_ctx_function() const { return ssl_ctx_function_; }
+    ChannelOptions() : ssl_ctx_function_(nullptr) {}
+    ssl_ctx_callback ssl_ctx_function() const { return ssl_ctx_function_; }
     std::shared_ptr<void> ssl_ctx_data() const { return ssl_ctx_data_; }
 
-    ChannelOptions& set_ssl_ctx_function(ssl_ctx_callback* ssl_ctx_function) {
+    ChannelOptions& set_ssl_ctx_function(ssl_ctx_callback ssl_ctx_function) {
       ssl_ctx_function_ = ssl_ctx_function;
       return *this;
     }
 
-    ChannelOptions& set_ssl_ctx_data(std::shared_ptr<void> &ssl_ctx_data) {
-      ssl_ctx_data_ = ssl_ctx_data;
+    ChannelOptions& set_ssl_ctx_data(std::shared_ptr<void> ssl_ctx_data) {
+      ssl_ctx_data_ = std::move(ssl_ctx_data);
       return *this;
     }
 
    private:
-     // Signiant patched properties to help add system truststore
-     // ssl_ctx_function_ should have signature:
-     //  CURLcode ssl_ctx_callback(CURL *curl, void *ssl_ctx, void *userptr)
-     ssl_ctx_callback* ssl_ctx_function_;
+     ssl_ctx_callback ssl_ctx_function_;
      std::shared_ptr<void> ssl_ctx_data_;
   };
 
