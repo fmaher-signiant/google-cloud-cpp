@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #include "google/cloud/storage/internal/curl_client.h"
-#include "google/cloud/storage/curl_options.h"
+#include "google/cloud/storage/curl_ssl_options.h"
 #include "google/cloud/internal/getenv.h"
 #include "google/cloud/internal/make_unique.h"
 #include "google/cloud/storage/internal/curl_request_builder.h"
@@ -47,19 +47,11 @@ extern "C" void CurlShareUnlockCallback(CURL*, curl_lock_data data,
 std::shared_ptr<CurlHandleFactory> CreateHandleFactory(
     ClientOptions const& options) {
   if (options.connection_pool_size() == 0) {
-    if (options.curl_options() != nullptr) {
-      return std::make_shared<DefaultCurlHandleFactory>(
-          *options.curl_options().get());
-    } else {
-      return std::make_shared<DefaultCurlHandleFactory>();
-    }
+    return std::make_shared<DefaultCurlHandleFactory>(
+        *options.curl_ssl_options().get());
   }
-  if (options.curl_options() != nullptr) {
-    return std::make_shared<PooledCurlHandleFactory>(
-        options.connection_pool_size(), *options.curl_options().get());
-  } else {
-    return std::make_shared<PooledCurlHandleFactory>(options.connection_pool_size());
-  }
+  return std::make_shared<PooledCurlHandleFactory>(
+      options.connection_pool_size(), *options.curl_ssl_options().get());
 }
 
 std::string XmlMapPredefinedAcl(std::string const& acl) {

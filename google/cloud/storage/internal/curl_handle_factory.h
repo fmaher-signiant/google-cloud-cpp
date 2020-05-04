@@ -17,8 +17,8 @@
 
 // commenting is temporary
 //#include "google/cloud/storage/internal/curl_wrappers.h"
+#include "google/cloud/storage/curl_ssl_options.h"
 #include "google/cloud/storage/version.h"
-#include "google/cloud/storage/curl_options.h"
 #include <mutex>
 #include <vector>
 
@@ -43,11 +43,11 @@ class CurlHandleFactory {
   virtual std::string LastClientIpAddress() const = 0;
 
  protected:
-  void SetCurlOptions(CURL* handle, CurlOptions const& options);
+  void SetCurlSslOptions(CURL* handle, CurlSslOptions const& options);
 };
 
 std::shared_ptr<CurlHandleFactory> GetDefaultCurlHandleFactory(
-    CurlOptions const& options);
+    CurlSslOptions const& options);
 std::shared_ptr<CurlHandleFactory> GetDefaultCurlHandleFactory();
 
 /**
@@ -60,7 +60,7 @@ std::shared_ptr<CurlHandleFactory> GetDefaultCurlHandleFactory();
 class DefaultCurlHandleFactory : public CurlHandleFactory {
  public:
   DefaultCurlHandleFactory() = default;
-  DefaultCurlHandleFactory(CurlOptions options)
+  DefaultCurlHandleFactory(CurlSslOptions options)
       : options_(std::move(options)) {}
 
   CurlPtr CreateHandle() override;
@@ -77,7 +77,7 @@ class DefaultCurlHandleFactory : public CurlHandleFactory {
  private:
   mutable std::mutex mu_;
   std::string last_client_ip_address_;
-  CurlOptions options_;
+  CurlSslOptions options_;
 };
 
 /**
@@ -88,7 +88,8 @@ class DefaultCurlHandleFactory : public CurlHandleFactory {
  */
 class PooledCurlHandleFactory : public CurlHandleFactory {
  public:
-  explicit PooledCurlHandleFactory(std::size_t maximum_size, CurlOptions options);
+  explicit PooledCurlHandleFactory(std::size_t maximum_size,
+                                   CurlSslOptions options);
   explicit PooledCurlHandleFactory(std::size_t maximum_size);
   ~PooledCurlHandleFactory() override;
 
@@ -109,7 +110,7 @@ class PooledCurlHandleFactory : public CurlHandleFactory {
   std::vector<CURL*> handles_;
   std::vector<CURLM*> multi_handles_;
   std::string last_client_ip_address_;
-  CurlOptions options_;
+  CurlSslOptions options_;
 };
 
 }  // namespace internal

@@ -110,8 +110,7 @@ add_library(
     client.cc
     client_options.h
     client_options.cc
-    curl_options.h
-    curl_options.cc
+    curl_ssl_options.h
     download_options.h
     hashing_options.h
     hashing_options.cc

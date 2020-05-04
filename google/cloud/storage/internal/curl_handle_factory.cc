@@ -22,8 +22,8 @@ namespace internal {
 std::once_flag default_curl_handle_factory_initialized;
 std::shared_ptr<CurlHandleFactory> default_curl_handle_factory;
 
-void CurlHandleFactory::SetCurlOptions(CURL* handle,
-                                       CurlOptions const& options) {
+void CurlHandleFactory::SetCurlSslOptions(CURL* handle,
+                                       CurlSslOptions const& options) {
   if (options.ssl_ctx_function() != nullptr) {
     curl_easy_setopt(handle, CURLOPT_SSL_CTX_FUNCTION,
                         options.ssl_ctx_function());
@@ -42,7 +42,7 @@ std::shared_ptr<CurlHandleFactory> GetDefaultCurlHandleFactory() {
 }
 
 std::shared_ptr<CurlHandleFactory> GetDefaultCurlHandleFactory(
-    CurlOptions const& options) {
+    CurlSslOptions const& options) {
   if (options.ssl_ctx_function() != nullptr) {
     // We have to create a new factory if options are specified
     //  since they might not be the same ones as the last time this was called
@@ -53,7 +53,7 @@ std::shared_ptr<CurlHandleFactory> GetDefaultCurlHandleFactory(
 
 CurlPtr DefaultCurlHandleFactory::CreateHandle() {
   CurlPtr curl(curl_easy_init(), &curl_easy_cleanup);
-  SetCurlOptions(curl.get(), options_);
+  SetCurlSslOptions(curl.get(), options_);
   return curl;
 }
 
@@ -75,14 +75,14 @@ CurlMulti DefaultCurlHandleFactory::CreateMultiHandle() {
 void DefaultCurlHandleFactory::CleanupMultiHandle(CurlMulti&& m) { m.reset(); }
 
 PooledCurlHandleFactory::PooledCurlHandleFactory(std::size_t maximum_size,
-                                                 CurlOptions options)
+                                                 CurlSslOptions options)
     : maximum_size_(maximum_size), options_(std::move(options)) {
   handles_.reserve(maximum_size);
   multi_handles_.reserve(maximum_size);
 }
 
 PooledCurlHandleFactory::PooledCurlHandleFactory(std::size_t maximum_size)
-    : PooledCurlHandleFactory(maximum_size, CurlOptions()) {
+    : PooledCurlHandleFactory(maximum_size, CurlSslOptions()) {
 }
 
 PooledCurlHandleFactory::~PooledCurlHandleFactory() {
@@ -102,11 +102,11 @@ CurlPtr PooledCurlHandleFactory::CreateHandle() {
     (void)curl_easy_reset(handle);
     handles_.pop_back();
     CurlPtr curl(handle, &curl_easy_cleanup);
-    SetCurlOptions(curl.get(), options_);
+    SetCurlSslOptions(curl.get(), options_);
     return curl;
   }
   CurlPtr curl(curl_easy_init(), &curl_easy_cleanup);
-  SetCurlOptions(curl.get(), options_);
+  SetCurlSslOptions(curl.get(), options_);
   return curl;
 }
 

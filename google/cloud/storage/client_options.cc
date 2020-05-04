@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "google/cloud/storage/client_options.h"
+#include "google/cloud/storage/curl_ssl_options.h"
 #include "google/cloud/internal/getenv.h"
 #include "google/cloud/log.h"
 #include "google/cloud/storage/oauth2/credentials.h"
@@ -67,6 +68,10 @@ std::size_t DefaultConnectionPoolSize() {
 
 }  // namespace
 
+// Must be in implementation (cc) file since header cannot import CurlSslOptions header
+ClientOptions::ClientOptions(std::shared_ptr<oauth2::Credentials> credentials)
+    : ClientOptions(credentials, std::make_shared<CurlSslOptions>()) {}
+
 StatusOr<ClientOptions> ClientOptions::CreateDefaultClientOptions() {
   auto creds = StorageDefaultCredentials();
   if (!creds) {
@@ -76,7 +81,7 @@ StatusOr<ClientOptions> ClientOptions::CreateDefaultClientOptions() {
 }
 
 ClientOptions::ClientOptions(std::shared_ptr<oauth2::Credentials> credentials,
-                             std::shared_ptr<CurlOptions> curl_options)
+                             std::shared_ptr<CurlSslOptions> curl_ssl_options)
     : credentials_(std::move(credentials)),
       endpoint_("https://storage.googleapis.com"),
       iam_endpoint_("https://iamcredentials.googleapis.com/v1"),
@@ -91,7 +96,7 @@ ClientOptions::ClientOptions(std::shared_ptr<oauth2::Credentials> credentials,
           GOOGLE_CLOUD_CPP_STORAGE_DEFAULT_MAXIMUM_SIMPLE_UPLOAD_SIZE),
       download_stall_timeout_(
           GOOGLE_CLOUD_CPP_STORAGE_DEFAULT_DOWNLOAD_STALL_TIMEOUT),
-      curl_options_(std::move(curl_options)) {
+      curl_ssl_options_(std::move(curl_ssl_options)) {
   auto emulator =
       google::cloud::internal::GetEnv("CLOUD_STORAGE_TESTBENCH_ENDPOINT");
   if (emulator.has_value()) {

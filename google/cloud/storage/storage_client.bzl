@@ -17,11 +17,11 @@
 """Automatically generated source lists for storage_client - DO NOT EDIT."""
 
 storage_client_hdrs = [
+    "curl_ssl_options.h",
     "bucket_access_control.h",
     "bucket_metadata.h",
     "client.h",
     "client_options.h",
-    "curl_options.h",
     "download_options.h",
     "hashing_options.h",
     "hmac_key_metadata.h",
@@ -115,7 +115,6 @@ storage_client_srcs = [
     "bucket_metadata.cc",
     "client.cc",
     "client_options.cc",
-    "curl_options.cc",
     "hashing_options.cc",
     "hmac_key_metadata.cc",
     "iam_policy.cc",

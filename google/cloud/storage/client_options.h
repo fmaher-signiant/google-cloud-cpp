@@ -24,8 +24,7 @@ namespace cloud {
 namespace storage {
 inline namespace STORAGE_CLIENT_NS {
 
-class CurlOptions;
-inline std::shared_ptr<CurlOptions> GetDefaultCurlOptions();
+class CurlSslOptions;
 
   // Newer versions of libcurl support URL parsing, which could reduce the number of fields in ProxyOptions:
   // https://curl.haxx.se/libcurl/c/parseurl.html
@@ -56,11 +55,9 @@ inline std::shared_ptr<CurlOptions> GetDefaultCurlOptions();
  */
 class ClientOptions {
  public:
-  explicit ClientOptions(std::shared_ptr<oauth2::Credentials> credentials)
-      : ClientOptions(credentials, nullptr) {}
-//      : ClientOptions(credentials, GetDefaultCurlOptions()) {}
+  explicit ClientOptions(std::shared_ptr<oauth2::Credentials> credentials);
   ClientOptions(std::shared_ptr<oauth2::Credentials> credentials,
-                std::shared_ptr<CurlOptions> curl_options);
+                std::shared_ptr<CurlSslOptions> curl_ssl_options);
 
   /**
    * Creates a `ClientOptions` with Google Application Default %Credentials.
@@ -182,8 +179,8 @@ class ClientOptions {
     return *this;
   }
 
-  std::shared_ptr<CurlOptions> curl_options() { return curl_options_; }
-  std::shared_ptr<CurlOptions> curl_options() const { return curl_options_; }
+  std::shared_ptr<CurlSslOptions> curl_ssl_options() { return curl_ssl_options_; }
+  std::shared_ptr<CurlSslOptions> curl_ssl_options() const { return curl_ssl_options_; }
 
   //@{
   /**
@@ -234,7 +231,7 @@ class ClientOptions {
   std::size_t maximum_socket_send_size_ = 0;
   std::chrono::seconds download_stall_timeout_;
   struct ProxyOptions proxy_options_;
-  std::shared_ptr<CurlOptions> curl_options_;
+  std::shared_ptr<CurlSslOptions> curl_ssl_options_;
 };
 }  // namespace STORAGE_CLIENT_NS
 }  // namespace storage
