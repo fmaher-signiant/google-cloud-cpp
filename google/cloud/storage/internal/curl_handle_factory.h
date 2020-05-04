@@ -15,8 +15,10 @@
 #ifndef GOOGLE_CLOUD_CPP_GOOGLE_CLOUD_STORAGE_INTERNAL_CURL_HANDLE_FACTORY_H
 #define GOOGLE_CLOUD_CPP_GOOGLE_CLOUD_STORAGE_INTERNAL_CURL_HANDLE_FACTORY_H
 
-#include "google/cloud/storage/internal/curl_wrappers.h"
+// commenting is temporary
+//#include "google/cloud/storage/internal/curl_wrappers.h"
 #include "google/cloud/storage/version.h"
+#include "google/cloud/storage/curl_options.h"
 #include <mutex>
 #include <vector>
 
@@ -41,11 +43,11 @@ class CurlHandleFactory {
   virtual std::string LastClientIpAddress() const = 0;
 
  protected:
-  void SetCurlOptions(CURL* handle, ChannelOptions const& options);
+  void SetCurlOptions(CURL* handle, CurlOptions const& options);
 };
 
 std::shared_ptr<CurlHandleFactory> GetDefaultCurlHandleFactory(
-    ChannelOptions const& options);
+    CurlOptions const& options);
 std::shared_ptr<CurlHandleFactory> GetDefaultCurlHandleFactory();
 
 /**
@@ -58,7 +60,7 @@ std::shared_ptr<CurlHandleFactory> GetDefaultCurlHandleFactory();
 class DefaultCurlHandleFactory : public CurlHandleFactory {
  public:
   DefaultCurlHandleFactory() = default;
-  DefaultCurlHandleFactory(ChannelOptions options)
+  DefaultCurlHandleFactory(CurlOptions options)
       : options_(std::move(options)) {}
 
   CurlPtr CreateHandle() override;
@@ -75,7 +77,7 @@ class DefaultCurlHandleFactory : public CurlHandleFactory {
  private:
   mutable std::mutex mu_;
   std::string last_client_ip_address_;
-  ChannelOptions options_;
+  CurlOptions options_;
 };
 
 /**
@@ -86,7 +88,8 @@ class DefaultCurlHandleFactory : public CurlHandleFactory {
  */
 class PooledCurlHandleFactory : public CurlHandleFactory {
  public:
-  explicit PooledCurlHandleFactory(std::size_t maximum_size, ChannelOptions options);
+  explicit PooledCurlHandleFactory(std::size_t maximum_size, CurlOptions options);
+  explicit PooledCurlHandleFactory(std::size_t maximum_size);
   ~PooledCurlHandleFactory() override;
 
   CurlPtr CreateHandle() override;
@@ -106,7 +109,7 @@ class PooledCurlHandleFactory : public CurlHandleFactory {
   std::vector<CURL*> handles_;
   std::vector<CURLM*> multi_handles_;
   std::string last_client_ip_address_;
-  ChannelOptions options_;
+  CurlOptions options_;
 };
 
 }  // namespace internal

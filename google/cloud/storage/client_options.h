@@ -24,31 +24,8 @@ namespace cloud {
 namespace storage {
 inline namespace STORAGE_CLIENT_NS {
 
-// Cannot import Curl namespace so we use void pointers, signature should be:
-//  CURLcode ssl_ctx_callback(CURL *curl, void *ssl_ctx, void *ssl_ctx_data)
-typedef int (*ssl_ctx_callback)(void *curl, void *ssl_ctx, void *userptr);
-
-  // Inspired by similarly named class at the current HEAD of master
-  class ChannelOptions {
-   public:
-    ChannelOptions() : ssl_ctx_function_(nullptr) {}
-    ssl_ctx_callback ssl_ctx_function() const { return ssl_ctx_function_; }
-    std::shared_ptr<void> ssl_ctx_data() const { return ssl_ctx_data_; }
-
-    ChannelOptions& set_ssl_ctx_function(ssl_ctx_callback ssl_ctx_function) {
-      ssl_ctx_function_ = ssl_ctx_function;
-      return *this;
-    }
-
-    ChannelOptions& set_ssl_ctx_data(std::shared_ptr<void> ssl_ctx_data) {
-      ssl_ctx_data_ = std::move(ssl_ctx_data);
-      return *this;
-    }
-
-   private:
-     ssl_ctx_callback ssl_ctx_function_;
-     std::shared_ptr<void> ssl_ctx_data_;
-  };
+class CurlOptions;
+inline std::shared_ptr<CurlOptions> GetDefaultCurlOptions();
 
   // Newer versions of libcurl support URL parsing, which could reduce the number of fields in ProxyOptions:
   // https://curl.haxx.se/libcurl/c/parseurl.html
@@ -80,9 +57,10 @@ typedef int (*ssl_ctx_callback)(void *curl, void *ssl_ctx, void *userptr);
 class ClientOptions {
  public:
   explicit ClientOptions(std::shared_ptr<oauth2::Credentials> credentials)
-      : ClientOptions(credentials, {}) {}
+      : ClientOptions(credentials, nullptr) {}
+//      : ClientOptions(credentials, GetDefaultCurlOptions()) {}
   ClientOptions(std::shared_ptr<oauth2::Credentials> credentials,
-                ChannelOptions channel_options);
+                std::shared_ptr<CurlOptions> curl_options);
 
   /**
    * Creates a `ClientOptions` with Google Application Default %Credentials.
@@ -204,8 +182,8 @@ class ClientOptions {
     return *this;
   }
 
-  ChannelOptions& channel_options() { return channel_options_; }
-  ChannelOptions const& channel_options() const { return channel_options_; }
+  std::shared_ptr<CurlOptions> curl_options() { return curl_options_; }
+  std::shared_ptr<CurlOptions> curl_options() const { return curl_options_; }
 
   //@{
   /**
@@ -256,7 +234,7 @@ class ClientOptions {
   std::size_t maximum_socket_send_size_ = 0;
   std::chrono::seconds download_stall_timeout_;
   struct ProxyOptions proxy_options_;
-  ChannelOptions channel_options_;
+  std::shared_ptr<CurlOptions> curl_options_;
 };
 }  // namespace STORAGE_CLIENT_NS
 }  // namespace storage

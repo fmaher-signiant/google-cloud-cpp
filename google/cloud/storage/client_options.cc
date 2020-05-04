@@ -76,7 +76,7 @@ StatusOr<ClientOptions> ClientOptions::CreateDefaultClientOptions() {
 }
 
 ClientOptions::ClientOptions(std::shared_ptr<oauth2::Credentials> credentials,
-                             ChannelOptions channel_options)
+                             std::shared_ptr<CurlOptions> curl_options)
     : credentials_(std::move(credentials)),
       endpoint_("https://storage.googleapis.com"),
       iam_endpoint_("https://iamcredentials.googleapis.com/v1"),
@@ -91,7 +91,7 @@ ClientOptions::ClientOptions(std::shared_ptr<oauth2::Credentials> credentials,
           GOOGLE_CLOUD_CPP_STORAGE_DEFAULT_MAXIMUM_SIMPLE_UPLOAD_SIZE),
       download_stall_timeout_(
           GOOGLE_CLOUD_CPP_STORAGE_DEFAULT_DOWNLOAD_STALL_TIMEOUT),
-      channel_options_(std::move(channel_options)) {
+      curl_options_(std::move(curl_options)) {
   auto emulator =
       google::cloud::internal::GetEnv("CLOUD_STORAGE_TESTBENCH_ENDPOINT");
   if (emulator.has_value()) {
