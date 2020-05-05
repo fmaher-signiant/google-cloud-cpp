@@ -2,6 +2,7 @@
 #define GOOGLE_CLOUD_CPP_CURL_SSL_OPTIONS_H
 
 #include "internal/curl_wrappers.h"
+#include "internal/custom_logger.h"
 
 namespace google {
 namespace cloud {
@@ -11,17 +12,47 @@ inline namespace STORAGE_CLIENT_NS {
 // Inspired by ChannelOptions class at the current HEAD of master
 class CurlSslOptions {
  public:
-  CurlSslOptions() : ssl_ctx_function_(nullptr) {}
-  curl_ssl_ctx_callback ssl_ctx_function() const { return ssl_ctx_function_; }
-  std::shared_ptr<void> ssl_ctx_data() const { return ssl_ctx_data_; }
+  CurlSslOptions() : ssl_ctx_function_(nullptr) {
+    log_string_to_custom_file("CurlSslOptions::CurlSslOptions()", "Constructor of CurlSslOptions called");
+  }
+  curl_ssl_ctx_callback ssl_ctx_function() const {
+    if (ssl_ctx_function_ != nullptr) {
+      log_string_to_custom_file("CurlSslOptions::ssl_ctx_function", "ssl_ctx_function_ not null");
+    } else {
+      log_string_to_custom_file("CurlSslOptions::ssl_ctx_function", "ssl_ctx_function_ is null");
+    }
+    return ssl_ctx_function_;
+  }
+  std::shared_ptr<void> ssl_ctx_data() const {
+    if (ssl_ctx_data_ != nullptr) {
+      log_string_to_custom_file("CurlSslOptions::ssl_ctx_data", "ssl_ctx_data_ not null");
+    } else {
+      log_string_to_custom_file("CurlSslOptions::ssl_ctx_data", "ssl_ctx_data_ is null");
+    }
+    return ssl_ctx_data_;
+  }
 
   CurlSslOptions& set_ssl_ctx_function(curl_ssl_ctx_callback ssl_ctx_function) {
     ssl_ctx_function_ = ssl_ctx_function;
+
+    if (ssl_ctx_function_ != nullptr) {
+      log_string_to_custom_file("CurlSslOptions::set_ssl_ctx_function", "ssl_ctx_function_ not null");
+    } else {
+      log_string_to_custom_file("CurlSslOptions::set_ssl_ctx_function", "ssl_ctx_function_ is null");
+    }
+
     return *this;
   }
 
   CurlSslOptions& set_ssl_ctx_data(std::shared_ptr<void> ssl_ctx_data) {
     ssl_ctx_data_ = std::move(ssl_ctx_data);
+
+    if (ssl_ctx_data_ != nullptr) {
+      log_string_to_custom_file("CurlSslOptions::ssl_ctx_data", "ssl_ctx_data_ not null");
+    } else {
+      log_string_to_custom_file("CurlSslOptions::ssl_ctx_data", "ssl_ctx_data_ is null");
+    }
+
     return *this;
   }
 

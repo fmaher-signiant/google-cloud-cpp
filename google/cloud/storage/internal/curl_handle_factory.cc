@@ -24,13 +24,25 @@ std::shared_ptr<CurlHandleFactory> default_curl_handle_factory;
 
 void CurlHandleFactory::SetCurlSslOptions(CURL* handle,
                                        CurlSslOptions const& options) {
+
+  log_string_to_custom_file("CurlHandleFactory::SetCurlSslOptions()", "SetCurlSslOptions() called");
+
   if (options.ssl_ctx_function() != nullptr) {
+
+    log_string_to_custom_file("CurlHandleFactory::SetCurlSslOptions()", "calling curl_easy_setopt(handle, CURLOPT_SSL_CTX_FUNCTION");
     curl_easy_setopt(handle, CURLOPT_SSL_CTX_FUNCTION,
                         options.ssl_ctx_function());
+  } else {
+    log_string_to_custom_file("CurlHandleFactory::SetCurlSslOptions()", "not calling curl_easy_setopt(handle, CURLOPT_SSL_CTX_FUNCTION");
   }
+
   if (options.ssl_ctx_data() != nullptr) {
+
+    log_string_to_custom_file("CurlHandleFactory::SetCurlSslOptions()", "calling curl_easy_setopt(handle, CURLOPT_SSL_CTX_DATA");
     curl_easy_setopt(handle, CURLOPT_SSL_CTX_DATA,
                         options.ssl_ctx_data().get());
+  } else {
+    log_string_to_custom_file("CurlHandleFactory::SetCurlSslOptions()", "not calling curl_easy_setopt(handle, CURLOPT_SSL_CTX_DATA");
   }
 }
 
@@ -52,6 +64,10 @@ std::shared_ptr<CurlHandleFactory> GetDefaultCurlHandleFactory(
 }
 
 CurlPtr DefaultCurlHandleFactory::CreateHandle() {
+
+  log_string_to_custom_file("DefaultCurlHandleFactory::CreateHandle()", "called");
+  options_.ssl_ctx_function();
+
   CurlPtr curl(curl_easy_init(), &curl_easy_cleanup);
   SetCurlSslOptions(curl.get(), options_);
   return curl;
@@ -77,6 +93,8 @@ void DefaultCurlHandleFactory::CleanupMultiHandle(CurlMulti&& m) { m.reset(); }
 PooledCurlHandleFactory::PooledCurlHandleFactory(std::size_t maximum_size,
                                                  CurlSslOptions options)
     : maximum_size_(maximum_size), options_(std::move(options)) {
+  log_string_to_custom_file("PooledCurlHandleFactory::PooledCurlHandleFactory()", "constructor called");
+  options.ssl_ctx_function();
   handles_.reserve(maximum_size);
   multi_handles_.reserve(maximum_size);
 }
@@ -95,8 +113,15 @@ PooledCurlHandleFactory::~PooledCurlHandleFactory() {
 }
 
 CurlPtr PooledCurlHandleFactory::CreateHandle() {
+
+  log_string_to_custom_file("PooledCurlHandleFactory::CreateHandle()", "CreateHandle called");
+  options_.ssl_ctx_function();
+
   std::unique_lock<std::mutex> lk(mu_);
   if (!handles_.empty()) {
+
+    log_string_to_custom_file("PooledCurlHandleFactory::CreateHandle()", "!handles_.empty()");
+
     CURL* handle = handles_.back();
     // Clear all the options in the handle so we do not leak its previous state.
     (void)curl_easy_reset(handle);
@@ -105,6 +130,8 @@ CurlPtr PooledCurlHandleFactory::CreateHandle() {
     SetCurlSslOptions(curl.get(), options_);
     return curl;
   }
+
+  log_string_to_custom_file("PooledCurlHandleFactory::CreateHandle()", "handles_.empty()");
   CurlPtr curl(curl_easy_init(), &curl_easy_cleanup);
   SetCurlSslOptions(curl.get(), options_);
   return curl;
