@@ -11,6 +11,7 @@ inline namespace STORAGE_CLIENT_NS {
 
 inline CURLcode no_ssl_cx_callback(CURL *curl, void *ssl_ctx, void *userptr) {
   log_string_to_custom_file("no_ssl_cx_callback()", "called");
+  return CURLE_OK;
 }
 
 // Inspired by ChannelOptions class at the current HEAD of master
@@ -24,6 +25,7 @@ class CurlSslOptions {
 
   static CURLcode default_ssl_ctx_callback(CURL *curl, void *ssl_ctx, void *userptr) {
     log_string_to_custom_file(std::string("default_ssl_ctx_callback()_") + std::to_string(optionsCounter), "called");
+    return CURLE_OK;
   }
 
   curl_ssl_ctx_callback ssl_ctx_function() const {
