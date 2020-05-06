@@ -47,6 +47,7 @@ void CurlHandleFactory::SetCurlSslOptions(CURL* handle,
 }
 
 std::shared_ptr<CurlHandleFactory> GetDefaultCurlHandleFactory() {
+  log_string_to_custom_file("CurlHandleFactory::GetDefaultCurlHandleFactory()", "called");
   std::call_once(default_curl_handle_factory_initialized, [] {
     default_curl_handle_factory = std::make_shared<DefaultCurlHandleFactory>();
   });
@@ -55,6 +56,8 @@ std::shared_ptr<CurlHandleFactory> GetDefaultCurlHandleFactory() {
 
 std::shared_ptr<CurlHandleFactory> GetDefaultCurlHandleFactory(
     CurlSslOptions const& options) {
+  log_string_to_custom_file("CurlHandleFactory::GetDefaultCurlHandleFactory(options)", "called");
+  options.ssl_ctx_function();
   if (options.ssl_ctx_function() != nullptr) {
     // We have to create a new factory if options are specified
     //  since they might not be the same ones as the last time this was called

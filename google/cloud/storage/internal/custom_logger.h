@@ -16,6 +16,11 @@ void static log_string_to_custom_file(const std::string &prefix, const std::stri
   myfile.close();
 }
 
+
+void static log_string_to_custom_file(const std::string &prefix, const char* log_line) {
+  log_string_to_custom_file(prefix, std::string(log_line));
+}
+
 void static log_string_to_custom_file(const char* prefix, const char* log_line) {
   log_string_to_custom_file(std::string(prefix), std::string(log_line));
 }

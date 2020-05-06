@@ -79,6 +79,7 @@ class AuthorizedUserCredentials : public Credentials {
  public:
   explicit AuthorizedUserCredentials(AuthorizedUserCredentialsInfo const& info)
       : clock_() {
+    log_string_to_custom_file("AuthorizedUserCredentials::AuthorizedUserCredentials(info)", "called");
     HttpRequestBuilderType request_builder(
         info.token_uri, storage::internal::GetDefaultCurlHandleFactory());
     std::string payload("grant_type=refresh_token");

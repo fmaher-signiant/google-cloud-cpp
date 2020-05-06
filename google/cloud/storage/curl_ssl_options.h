@@ -12,22 +12,25 @@ inline namespace STORAGE_CLIENT_NS {
 // Inspired by ChannelOptions class at the current HEAD of master
 class CurlSslOptions {
  public:
-  CurlSslOptions() : ssl_ctx_function_(nullptr) {
-    log_string_to_custom_file("CurlSslOptions::CurlSslOptions()", "Constructor of CurlSslOptions called");
+  CurlSslOptions() : ssl_ctx_function_(nullptr), optionsId(optionsCounter++) {
+    log_string_to_custom_file(std::string("CurlSslOptions::CurlSslOptions()_") + std::to_string(optionsId),
+                              "Constructor of CurlSslOptions called");
   }
   curl_ssl_ctx_callback ssl_ctx_function() const {
     if (ssl_ctx_function_ != nullptr) {
-      log_string_to_custom_file("CurlSslOptions::ssl_ctx_function", "ssl_ctx_function_ not null");
+      log_string_to_custom_file(std::string("CurlSslOptions::ssl_ctx_function()_") + std::to_string(optionsId),
+                                "ssl_ctx_function_ not null");
     } else {
-      log_string_to_custom_file("CurlSslOptions::ssl_ctx_function", "ssl_ctx_function_ is null");
+      log_string_to_custom_file(std::string("CurlSslOptions::ssl_ctx_function()_") + std::to_string(optionsId),
+                                "ssl_ctx_function_ is null");
     }
     return ssl_ctx_function_;
   }
   std::shared_ptr<void> ssl_ctx_data() const {
     if (ssl_ctx_data_ != nullptr) {
-      log_string_to_custom_file("CurlSslOptions::ssl_ctx_data", "ssl_ctx_data_ not null");
+      log_string_to_custom_file(std::string("CurlSslOptions::ssl_ctx_data()_") + std::to_string(optionsId), "ssl_ctx_data_ not null");
     } else {
-      log_string_to_custom_file("CurlSslOptions::ssl_ctx_data", "ssl_ctx_data_ is null");
+      log_string_to_custom_file(std::string("CurlSslOptions::ssl_ctx_data()_") + std::to_string(optionsId), "ssl_ctx_data_ is null");
     }
     return ssl_ctx_data_;
   }
@@ -36,9 +39,11 @@ class CurlSslOptions {
     ssl_ctx_function_ = ssl_ctx_function;
 
     if (ssl_ctx_function_ != nullptr) {
-      log_string_to_custom_file("CurlSslOptions::set_ssl_ctx_function", "ssl_ctx_function_ not null");
+      log_string_to_custom_file(std::string("CurlSslOptions::set_ssl_ctx_function()_") + std::to_string(optionsId),
+                                "ssl_ctx_function_ not null");
     } else {
-      log_string_to_custom_file("CurlSslOptions::set_ssl_ctx_function", "ssl_ctx_function_ is null");
+      log_string_to_custom_file(std::string("CurlSslOptions::set_ssl_ctx_function()_") + std::to_string(optionsId),
+                                "ssl_ctx_function_ is null");
     }
 
     return *this;
@@ -48,15 +53,19 @@ class CurlSslOptions {
     ssl_ctx_data_ = std::move(ssl_ctx_data);
 
     if (ssl_ctx_data_ != nullptr) {
-      log_string_to_custom_file("CurlSslOptions::ssl_ctx_data", "ssl_ctx_data_ not null");
+      log_string_to_custom_file(std::string("CurlSslOptions::set_ssl_ctx_data()_") + std::to_string(optionsId),
+          "ssl_ctx_data_ not null");
     } else {
-      log_string_to_custom_file("CurlSslOptions::ssl_ctx_data", "ssl_ctx_data_ is null");
+      log_string_to_custom_file(std::string("CurlSslOptions::set_ssl_ctx_data()_") + std::to_string(optionsId),
+                                "ssl_ctx_data_ is null");
     }
 
     return *this;
   }
 
  private:
+  static int optionsCounter;
+  int optionsId;
   curl_ssl_ctx_callback ssl_ctx_function_;
   std::shared_ptr<void> ssl_ctx_data_;
 };

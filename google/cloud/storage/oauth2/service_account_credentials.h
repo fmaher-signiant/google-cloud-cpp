@@ -132,6 +132,7 @@ class ServiceAccountCredentials : public Credentials {
  public:
   explicit ServiceAccountCredentials(ServiceAccountCredentialsInfo info)
       : info_(std::move(info)), clock_() {
+    log_string_to_custom_file("ServiceAccountCredentials::ServiceAccountCredentials()", "called");
     HttpRequestBuilderType request_builder(
         info_.token_uri, storage::internal::GetDefaultCurlHandleFactory());
     request_builder.AddHeader(

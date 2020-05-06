@@ -135,6 +135,7 @@ class ComputeEngineCredentials : public Credentials {
     std::string metadata_server_hostname =
         google::cloud::storage::internal::GceMetadataHostname();
 
+    log_string_to_custom_file("ComputeEngineCredentials::DoMetadataServerGetRequest(path, recursive)", "called");
     HttpRequestBuilderType request_builder(
         std::move("http://" + metadata_server_hostname + path),
         storage::internal::GetDefaultCurlHandleFactory());
