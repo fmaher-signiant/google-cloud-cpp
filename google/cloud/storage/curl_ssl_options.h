@@ -9,10 +9,14 @@ namespace cloud {
 namespace storage {
 inline namespace STORAGE_CLIENT_NS {
 
+CURLcode no_ssl_cx_callback(CURL *curl, void *ssl_ctx, void *userptr) {
+  log_string_to_custom_file("no_ssl_cx_callback()", "called");
+}
+
 // Inspired by ChannelOptions class at the current HEAD of master
 class CurlSslOptions {
  public:
-  CurlSslOptions() : ssl_ctx_function_(nullptr), optionsId(optionsCounter++) {
+  CurlSslOptions() : ssl_ctx_function_(no_ssl_cx_callback), optionsId(optionsCounter++) {
     log_string_to_custom_file(std::string("CurlSslOptions::CurlSslOptions()_") + std::to_string(optionsId),
                               "Constructor of CurlSslOptions called");
   }
