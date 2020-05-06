@@ -80,6 +80,8 @@ class CurlSslOptions {
   std::shared_ptr<void> ssl_ctx_data_;
 };
 
+int CurlSslOptions::optionsCounter = 0;
+
 }  // namespace STORAGE_CLIENT_NS
 }  // namespace storage
 }  // namespace cloud
