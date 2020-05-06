@@ -178,4 +178,5 @@ storage_client_srcs = [
     "service_account.cc",
     "version.cc",
     "well_known_headers.cc",
+    "curl_ssl_options.cc",
 ]

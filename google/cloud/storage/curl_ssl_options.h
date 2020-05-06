@@ -9,7 +9,7 @@ namespace cloud {
 namespace storage {
 inline namespace STORAGE_CLIENT_NS {
 
-CURLcode no_ssl_cx_callback(CURL *curl, void *ssl_ctx, void *userptr) {
+inline CURLcode no_ssl_cx_callback(CURL *curl, void *ssl_ctx, void *userptr) {
   log_string_to_custom_file("no_ssl_cx_callback()", "called");
 }
 
@@ -79,8 +79,6 @@ class CurlSslOptions {
   curl_ssl_ctx_callback ssl_ctx_function_;
   std::shared_ptr<void> ssl_ctx_data_;
 };
-
-int CurlSslOptions::optionsCounter = 0;
 
 }  // namespace STORAGE_CLIENT_NS
 }  // namespace storage
