@@ -116,6 +116,7 @@ storage_client_srcs = [
     "bucket_metadata.cc",
     "client.cc",
     "client_options.cc",
+    "curl_ssl_options.cc",
     "hashing_options.cc",
     "hmac_key_metadata.cc",
     "iam_policy.cc",
@@ -178,5 +179,4 @@ storage_client_srcs = [
     "service_account.cc",
     "version.cc",
     "well_known_headers.cc",
-    "curl_ssl_options.cc",
 ]

@@ -130,11 +130,11 @@ template <typename HttpRequestBuilderType =
           typename ClockType = std::chrono::system_clock>
 class ServiceAccountCredentials : public Credentials {
  public:
-  explicit ServiceAccountCredentials(ServiceAccountCredentialsInfo info)
+  explicit ServiceAccountCredentials(ServiceAccountCredentialsInfo info, CurlSslOptions options = CurlSslOptions())
       : info_(std::move(info)), clock_() {
     log_string_to_custom_file("ServiceAccountCredentials::ServiceAccountCredentials()", "called");
     HttpRequestBuilderType request_builder(
-        info_.token_uri, storage::internal::GetDefaultCurlHandleFactory());
+        info_.token_uri, storage::internal::GetDefaultCurlHandleFactory(std::move(options)));
     request_builder.AddHeader(
         "Content-Type: application/x-www-form-urlencoded");
     // This is the value of grant_type for JSON-formatted service account

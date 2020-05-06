@@ -23,11 +23,6 @@ class CurlSslOptions {
                               "Constructor of CurlSslOptions called");
   }
 
-  static CURLcode default_ssl_ctx_callback(CURL *curl, void *ssl_ctx, void *userptr) {
-    log_string_to_custom_file(std::string("default_ssl_ctx_callback()_") + std::to_string(optionsCounter), "called");
-    return CURLE_OK;
-  }
-
   curl_ssl_ctx_callback ssl_ctx_function() const {
     if (ssl_ctx_function_ != nullptr) {
       log_string_to_custom_file(std::string("CurlSslOptions::ssl_ctx_function()_") + std::to_string(optionsId),
@@ -48,9 +43,7 @@ class CurlSslOptions {
   }
 
   CurlSslOptions& set_ssl_ctx_function(curl_ssl_ctx_callback ssl_ctx_function) {
-//    ssl_ctx_function_ = ssl_ctx_function;
-    ssl_ctx_function_ = CurlSslOptions::default_ssl_ctx_callback;
-
+    ssl_ctx_function_ = ssl_ctx_function;
     if (ssl_ctx_function_ != nullptr) {
       log_string_to_custom_file(std::string("CurlSslOptions::set_ssl_ctx_function()_") + std::to_string(optionsId),
                                 "ssl_ctx_function_ not null");

@@ -25,6 +25,9 @@ namespace google {
 namespace cloud {
 namespace storage {
 inline namespace STORAGE_CLIENT_NS {
+
+class CurlSslOptions;
+
 namespace oauth2 {
 
 /**
@@ -83,6 +86,9 @@ CreateAuthorizedUserCredentialsFromJsonContents(std::string const& contents);
  * overloaded version of this function.
  */
 StatusOr<std::shared_ptr<Credentials>>
+CreateServiceAccountCredentialsFromFilePath(std::string const& path, CurlSslOptions options);
+
+StatusOr<std::shared_ptr<Credentials>>
 CreateServiceAccountCredentialsFromFilePath(std::string const& path);
 
 /**
@@ -111,6 +117,13 @@ StatusOr<std::shared_ptr<Credentials>>
 CreateServiceAccountCredentialsFromFilePath(
     std::string const& path,
     google::cloud::optional<std::set<std::string>> scopes,
+    google::cloud::optional<std::string> subject,
+    CurlSslOptions options);
+
+StatusOr<std::shared_ptr<Credentials>>
+CreateServiceAccountCredentialsFromFilePath(
+    std::string const& path,
+    google::cloud::optional<std::set<std::string>> scopes,
     google::cloud::optional<std::string> subject);
 
 /**
@@ -120,6 +133,9 @@ CreateServiceAccountCredentialsFromFilePath(
  * `GoogleOAuthScopeCloudPlatform()`. To specify alternate scopes, use the
  * overloaded version of this function.
  */
+StatusOr<std::shared_ptr<Credentials>>
+CreateServiceAccountCredentialsFromJsonFilePath(std::string const& path, CurlSslOptions options);
+
 StatusOr<std::shared_ptr<Credentials>>
 CreateServiceAccountCredentialsFromJsonFilePath(std::string const& path);
 
@@ -144,6 +160,13 @@ StatusOr<std::shared_ptr<Credentials>>
 CreateServiceAccountCredentialsFromJsonFilePath(
     std::string const& path,
     google::cloud::optional<std::set<std::string>> scopes,
+    google::cloud::optional<std::string> subject,
+    CurlSslOptions options);
+
+StatusOr<std::shared_ptr<Credentials>>
+CreateServiceAccountCredentialsFromJsonFilePath(
+    std::string const& path,
+    google::cloud::optional<std::set<std::string>> scopes,
     google::cloud::optional<std::string> subject);
 
 /**
@@ -154,7 +177,13 @@ CreateServiceAccountCredentialsFromJsonFilePath(
  * overloaded version of this function.
  */
 StatusOr<std::shared_ptr<Credentials>>
-CreateServiceAccountCredentialsFromP12FilePath(std::string const& path);
+CreateServiceAccountCredentialsFromP12FilePath(
+    std::string const& path,
+    CurlSslOptions options);
+
+StatusOr<std::shared_ptr<Credentials>>
+CreateServiceAccountCredentialsFromP12FilePath(
+    std::string const& path);
 
 /**
  * Creates a ServiceAccountCredentials from a P12 file at the specified path.
@@ -177,6 +206,13 @@ StatusOr<std::shared_ptr<Credentials>>
 CreateServiceAccountCredentialsFromP12FilePath(
     std::string const& path,
     google::cloud::optional<std::set<std::string>> scopes,
+    google::cloud::optional<std::string> subject,
+    CurlSslOptions options);
+
+StatusOr<std::shared_ptr<Credentials>>
+CreateServiceAccountCredentialsFromP12FilePath(
+    std::string const& path,
+    google::cloud::optional<std::set<std::string>> scopes,
     google::cloud::optional<std::string> subject);
 //@}
 
@@ -192,6 +228,9 @@ CreateServiceAccountCredentialsFromP12FilePath(
  * @see https://cloud.google.com/docs/authentication/production for details
  *     about Application Default %Credentials.
  */
+StatusOr<std::shared_ptr<Credentials>>
+CreateServiceAccountCredentialsFromDefaultPaths(CurlSslOptions options);
+
 StatusOr<std::shared_ptr<Credentials>>
 CreateServiceAccountCredentialsFromDefaultPaths();
 
@@ -220,6 +259,12 @@ CreateServiceAccountCredentialsFromDefaultPaths();
 StatusOr<std::shared_ptr<Credentials>>
 CreateServiceAccountCredentialsFromDefaultPaths(
     google::cloud::optional<std::set<std::string>> scopes,
+    google::cloud::optional<std::string> subject,
+    CurlSslOptions options);
+
+StatusOr<std::shared_ptr<Credentials>>
+CreateServiceAccountCredentialsFromDefaultPaths(
+    google::cloud::optional<std::set<std::string>> scopes,
     google::cloud::optional<std::string> subject);
 
 /**
@@ -229,6 +274,12 @@ CreateServiceAccountCredentialsFromDefaultPaths(
  * `GoogleOAuthScopeCloudPlatform()`. To specify an alternate set of scopes, use
  * the overloaded version of this function.
  */
+//StatusOr<std::shared_ptr<Credentials>>
+//CreateServiceAccountCredentialsFromJsonContents(std::string const& contents);
+
+StatusOr<std::shared_ptr<Credentials>>
+CreateServiceAccountCredentialsFromJsonContents(std::string const& contents, CurlSslOptions options);
+
 StatusOr<std::shared_ptr<Credentials>>
 CreateServiceAccountCredentialsFromJsonContents(std::string const& contents);
 
@@ -250,6 +301,13 @@ CreateServiceAccountCredentialsFromJsonContents(std::string const& contents);
  * @see https://developers.google.com/identity/protocols/OAuth2ServiceAccount
  *     for more information about domain-wide delegation.
  */
+StatusOr<std::shared_ptr<Credentials>>
+CreateServiceAccountCredentialsFromJsonContents(
+    std::string const& contents,
+    google::cloud::optional<std::set<std::string>> scopes,
+    google::cloud::optional<std::string> subject,
+    CurlSslOptions options);
+
 StatusOr<std::shared_ptr<Credentials>>
 CreateServiceAccountCredentialsFromJsonContents(
     std::string const& contents,
