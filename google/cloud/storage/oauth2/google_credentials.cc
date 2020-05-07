@@ -47,8 +47,7 @@ constexpr char kAdcLink[] =
 StatusOr<std::unique_ptr<Credentials>> LoadCredsFromPath(
     std::string const& path, bool non_service_account_ok,
     google::cloud::optional<std::set<std::string>> service_account_scopes,
-    google::cloud::optional<std::string> service_account_subject,
-    CurlSslOptions options) {
+    google::cloud::optional<std::string> service_account_subject) {
   namespace nl = google::cloud::storage::internal::nl;
 
   std::ifstream ifs(path);
@@ -112,14 +111,6 @@ StatusOr<std::unique_ptr<Credentials>> LoadCredsFromPath(
                  path + "."));
 }
 
-StatusOr<std::unique_ptr<Credentials>> LoadCredsFromPath(
-    std::string const& path, bool non_service_account_ok,
-    google::cloud::optional<std::set<std::string>> service_account_scopes,
-    google::cloud::optional<std::string> service_account_subject) {
-  return LoadCredsFromPath(path, non_service_account_ok, service_account_scopes,
-                           service_account_subject, CurlSslOptions());
-}
-
 // Tries to load the file at the path specified by the value of the Application
 // Default %Credentials environment variable and to create the appropriate
 // Credentials type.
@@ -160,18 +151,10 @@ StatusOr<std::unique_ptr<Credentials>> MaybeLoadCredsFromAdcPaths(
                            std::move(service_account_subject));
 }
 
-StatusOr<std::unique_ptr<Credentials>> MaybeLoadCredsFromAdcPaths(
-    bool non_service_account_ok,
-    google::cloud::optional<std::set<std::string>> service_account_scopes,
-    google::cloud::optional<std::string> service_account_subject) {
-  return MaybeLoadCredsFromAdcPaths(non_service_account_ok,
-      service_account_scopes, service_account_subject, CurlSslOptions());
-}
-
 StatusOr<std::shared_ptr<Credentials>> GoogleDefaultCredentials() {
   // 1 and 2) Check if the GOOGLE_APPLICATION_CREDENTIALS environment variable
   // is set or if the gcloud ADC file exists.
-  auto creds = MaybeLoadCredsFromAdcPaths(true, {}, {}, CurlSslOptions());
+  auto creds = MaybeLoadCredsFromAdcPaths(true, {}, {});
   if (!creds) {
     return StatusOr<std::shared_ptr<Credentials>>(creds.status());
   }
