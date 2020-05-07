@@ -71,8 +71,7 @@ StatusOr<std::unique_ptr<Credentials>> LoadCredsFromPath(
     info->subject = std::move(service_account_subject);
     info->scopes = std::move(service_account_scopes);
     auto credentials =
-        google::cloud::internal::make_unique<ServiceAccountCredentials<>>(
-            *info, std::move(options));
+        google::cloud::internal::make_unique<ServiceAccountCredentials<>>(*info);
     return std::unique_ptr<Credentials>(std::move(credentials));
   }
   std::string cred_type = cred_json.value("type", "no type given");
@@ -100,8 +99,7 @@ StatusOr<std::unique_ptr<Credentials>> LoadCredsFromPath(
     info->subject = std::move(service_account_subject);
     info->scopes = std::move(service_account_scopes);
     std::unique_ptr<Credentials> ptr =
-        google::cloud::internal::make_unique<ServiceAccountCredentials<>>(
-            *info, std::move(options));
+        google::cloud::internal::make_unique<ServiceAccountCredentials<>>(*info);
     return StatusOr<std::unique_ptr<Credentials>>(std::move(ptr));
   }
   return StatusOr<std::unique_ptr<Credentials>>(
