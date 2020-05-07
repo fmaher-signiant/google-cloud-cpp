@@ -22,14 +22,14 @@ namespace internal {
 std::once_flag default_curl_handle_factory_initialized;
 std::shared_ptr<CurlHandleFactory> default_curl_handle_factory;
 
-void CurlHandleFactory::SetCurlSslOptions(CURL* handle, CurlSslOptions const& options) {
-  if (options.ssl_ctx_function() != nullptr) {
+void CurlHandleFactory::SetCurlSslOptions(CURL* handle, CurlSslOptions const& sslOptions) {
+  if (sslOptions.ssl_ctx_function() != nullptr) {
     curl_easy_setopt(handle, CURLOPT_SSL_CTX_FUNCTION,
-                        options.ssl_ctx_function());
+                        sslOptions.ssl_ctx_function());
   }
-  if (options.ssl_ctx_data() != nullptr) {
+  if (sslOptions.ssl_ctx_data() != nullptr) {
     curl_easy_setopt(handle, CURLOPT_SSL_CTX_DATA,
-                        options.ssl_ctx_data().get());
+                        sslOptions.ssl_ctx_data().get());
   }
 }
 
@@ -41,18 +41,18 @@ std::shared_ptr<CurlHandleFactory> GetDefaultCurlHandleFactory() {
 }
 
 std::shared_ptr<CurlHandleFactory> GetDefaultCurlHandleFactory(
-    CurlSslOptions const& options) {
-  if (options.ssl_ctx_function() != nullptr) {
-    // We have to create a new factory if options are specified
+    CurlSslOptions const& sslOptions) {
+  if (sslOptions.ssl_ctx_function() != nullptr) {
+    // We have to create a new factory if sslOptions are specified
     //  since they might not be the same ones as the last time this was called
-    return std::make_shared<DefaultCurlHandleFactory>(options);
+    return std::make_shared<DefaultCurlHandleFactory>(sslOptions);
   }
   return GetDefaultCurlHandleFactory();
 }
 
 CurlPtr DefaultCurlHandleFactory::CreateHandle() {
   CurlPtr curl(curl_easy_init(), &curl_easy_cleanup);
-  SetCurlSslOptions(curl.get(), options_);
+  SetCurlSslOptions(curl.get(), sslOptions_);
   return curl;
 }
 
@@ -74,8 +74,8 @@ CurlMulti DefaultCurlHandleFactory::CreateMultiHandle() {
 void DefaultCurlHandleFactory::CleanupMultiHandle(CurlMulti&& m) { m.reset(); }
 
 PooledCurlHandleFactory::PooledCurlHandleFactory(std::size_t maximum_size,
-                                                 CurlSslOptions options)
-    : maximum_size_(maximum_size), options_(std::move(options)) {
+                                                 CurlSslOptions sslOptions)
+    : maximum_size_(maximum_size), sslOptions_(std::move(sslOptions)) {
   handles_.reserve(maximum_size);
   multi_handles_.reserve(maximum_size);
 }
@@ -101,12 +101,12 @@ CurlPtr PooledCurlHandleFactory::CreateHandle() {
     (void)curl_easy_reset(handle);
     handles_.pop_back();
     CurlPtr curl(handle, &curl_easy_cleanup);
-    SetCurlSslOptions(curl.get(), options_);
+    SetCurlSslOptions(curl.get(), sslOptions_);
     return curl;
   }
 
   CurlPtr curl(curl_easy_init(), &curl_easy_cleanup);
-  SetCurlSslOptions(curl.get(), options_);
+  SetCurlSslOptions(curl.get(), sslOptions_);
   return curl;
 }
 

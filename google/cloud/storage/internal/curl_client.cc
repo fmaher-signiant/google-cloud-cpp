@@ -47,10 +47,10 @@ extern "C" void CurlShareUnlockCallback(CURL*, curl_lock_data data,
 std::shared_ptr<CurlHandleFactory> CreateHandleFactory(ClientOptions const& options) {
   if (options.connection_pool_size() == 0) {
     return std::make_shared<DefaultCurlHandleFactory>(
-        *options.curl_ssl_options().get());
+        *options.curl_ssl_options());
   }
   return std::make_shared<PooledCurlHandleFactory>(
-      options.connection_pool_size(), *options.curl_ssl_options().get());
+      options.connection_pool_size(), *options.curl_ssl_options());
 }
 
 std::string XmlMapPredefinedAcl(std::string const& acl) {

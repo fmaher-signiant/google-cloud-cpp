@@ -108,7 +108,6 @@ storage_client_hdrs = [
     "version_info.h",
     "well_known_headers.h",
     "well_known_parameters.h",
-    "internal/custom_logger.h",
 ]
 
 storage_client_srcs = [
@@ -116,7 +115,6 @@ storage_client_srcs = [
     "bucket_metadata.cc",
     "client.cc",
     "client_options.cc",
-    "curl_ssl_options.cc",
     "hashing_options.cc",
     "hmac_key_metadata.cc",
     "iam_policy.cc",

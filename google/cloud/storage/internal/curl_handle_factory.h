@@ -15,8 +15,7 @@
 #ifndef GOOGLE_CLOUD_CPP_GOOGLE_CLOUD_STORAGE_INTERNAL_CURL_HANDLE_FACTORY_H
 #define GOOGLE_CLOUD_CPP_GOOGLE_CLOUD_STORAGE_INTERNAL_CURL_HANDLE_FACTORY_H
 
-// commenting is temporary
-//#include "google/cloud/storage/internal/curl_wrappers.h"
+#include "google/cloud/storage/internal/curl_wrappers.h"
 #include "google/cloud/storage/curl_ssl_options.h"
 #include "google/cloud/storage/version.h"
 #include <mutex>
@@ -43,11 +42,15 @@ class CurlHandleFactory {
   virtual std::string LastClientIpAddress() const = 0;
 
  protected:
-  void SetCurlSslOptions(CURL* handle, CurlSslOptions const& options);
+  void SetCurlSslOptions(CURL* handle, CurlSslOptions const& sslOptions);
 };
 
+// The model I'm basing myself on for the CurlSslOptions uses a reference here
+//  as opposed to moving a copy like in other cases
+// Honestly speaking, I am not sure why it does that
+//  but I decided to replicate the design
 std::shared_ptr<CurlHandleFactory> GetDefaultCurlHandleFactory(
-    CurlSslOptions const& options);
+    CurlSslOptions const& sslOptions);
 std::shared_ptr<CurlHandleFactory> GetDefaultCurlHandleFactory();
 
 /**
@@ -60,8 +63,8 @@ std::shared_ptr<CurlHandleFactory> GetDefaultCurlHandleFactory();
 class DefaultCurlHandleFactory : public CurlHandleFactory {
  public:
   DefaultCurlHandleFactory() = default;
-  DefaultCurlHandleFactory(CurlSslOptions options)
-      : options_(std::move(options)) {
+  DefaultCurlHandleFactory(CurlSslOptions sslOptions)
+      : sslOptions_(std::move(sslOptions)) {
   }
 
   CurlPtr CreateHandle() override;
@@ -78,7 +81,7 @@ class DefaultCurlHandleFactory : public CurlHandleFactory {
  private:
   mutable std::mutex mu_;
   std::string last_client_ip_address_;
-  CurlSslOptions options_;
+  CurlSslOptions sslOptions_;
 };
 
 /**
@@ -90,7 +93,7 @@ class DefaultCurlHandleFactory : public CurlHandleFactory {
 class PooledCurlHandleFactory : public CurlHandleFactory {
  public:
   explicit PooledCurlHandleFactory(std::size_t maximum_size,
-                                   CurlSslOptions options);
+                                   CurlSslOptions sslOptions);
   explicit PooledCurlHandleFactory(std::size_t maximum_size);
   ~PooledCurlHandleFactory() override;
 
@@ -111,7 +114,7 @@ class PooledCurlHandleFactory : public CurlHandleFactory {
   std::vector<CURL*> handles_;
   std::vector<CURLM*> multi_handles_;
   std::string last_client_ip_address_;
-  CurlSslOptions options_;
+  CurlSslOptions sslOptions_;
 };
 
 }  // namespace internal
