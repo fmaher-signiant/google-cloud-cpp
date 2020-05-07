@@ -98,9 +98,6 @@ ClientOptions::ClientOptions(std::shared_ptr<oauth2::Credentials> credentials,
           GOOGLE_CLOUD_CPP_STORAGE_DEFAULT_DOWNLOAD_STALL_TIMEOUT),
       curl_ssl_options_(std::move(curl_ssl_options)) {
 
-  log_string_to_custom_file("ClientOptions::ClientOptions(creds, ssl_options)", "constructor called");
-  curl_ssl_options_->ssl_ctx_function();
-
   auto emulator =
       google::cloud::internal::GetEnv("CLOUD_STORAGE_TESTBENCH_ENDPOINT");
   if (emulator.has_value()) {

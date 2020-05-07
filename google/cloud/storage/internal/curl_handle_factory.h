@@ -62,8 +62,6 @@ class DefaultCurlHandleFactory : public CurlHandleFactory {
   DefaultCurlHandleFactory() = default;
   DefaultCurlHandleFactory(CurlSslOptions options)
       : options_(std::move(options)) {
-    log_string_to_custom_file("DefaultCurlHandleFactory::DefaultCurlHandleFactory()", "constructor called");
-    options.ssl_ctx_function();
   }
 
   CurlPtr CreateHandle() override;

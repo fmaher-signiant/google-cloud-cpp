@@ -44,20 +44,11 @@ extern "C" void CurlShareUnlockCallback(CURL*, curl_lock_data data,
   client->UnlockShared(data);
 }
 
-std::shared_ptr<CurlHandleFactory> CreateHandleFactory(
-    ClientOptions const& options) {
-
-  log_string_to_custom_file("CurlClient::CreateHandleFactory(options)", "CreateHandleFactory called");
-  options.curl_ssl_options()->ssl_ctx_function();
-
+std::shared_ptr<CurlHandleFactory> CreateHandleFactory(ClientOptions const& options) {
   if (options.connection_pool_size() == 0) {
-
-    log_string_to_custom_file("CurlClient::CreateHandleFactory(options)", "creating a DefaultCurlHandleFactory");
     return std::make_shared<DefaultCurlHandleFactory>(
         *options.curl_ssl_options().get());
   }
-
-  log_string_to_custom_file("CurlClient::CreateHandleFactory(options)", "creating a PooledCurlHandleFactory");
   return std::make_shared<PooledCurlHandleFactory>(
       options.connection_pool_size(), *options.curl_ssl_options().get());
 }
@@ -274,13 +265,6 @@ CurlClient::CurlClient(ClientOptions options)
       upload_factory_(CreateHandleFactory(options_)),
       xml_upload_factory_(CreateHandleFactory(options_)),
       xml_download_factory_(CreateHandleFactory(options_)) {
-
-  log_string_to_custom_file("CurlClient::CurlClient(client_options)", "constructor called");
-  if (options.curl_ssl_options() != nullptr) {
-    options.curl_ssl_options()->ssl_ctx_function();
-  } else {
-    log_string_to_custom_file("CurlClient::CurlClient(client_options)", "options.curl_ssl_options() == nullptr");
-  }
 
   storage_endpoint_ = options_.endpoint() + "/storage/" + options_.version();
   upload_endpoint_ =

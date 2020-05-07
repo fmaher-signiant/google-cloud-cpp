@@ -259,8 +259,7 @@ add_library(
     version_info.h
     well_known_headers.h
     well_known_headers.cc
-    well_known_parameters.h
-    internal/custom_logger.h)
+    well_known_parameters.h)
 
 set(STORAGE_CLIENT_LIBS google_cloud_cpp_common
            nlohmann_json
