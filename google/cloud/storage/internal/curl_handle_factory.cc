@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "google/cloud/storage/internal/curl_handle_factory.h"
+#include "google/cloud/log.h"
 
 namespace google {
 namespace cloud {
@@ -24,12 +25,17 @@ std::shared_ptr<CurlHandleFactory> default_curl_handle_factory;
 
 void CurlHandleFactory::SetCurlSslOptions(CURL* handle, CurlSslOptions const& sslOptions) {
   if (sslOptions.ssl_ctx_function() != nullptr) {
-    curl_easy_setopt(handle, CURLOPT_SSL_CTX_FUNCTION,
-                        sslOptions.ssl_ctx_function());
+    CURLcode ret = curl_easy_setopt(handle, CURLOPT_SSL_CTX_FUNCTION, sslOptions.ssl_ctx_function());
+    if (ret != CURLE_OK) {
+      GCP_LOG(ERROR) << __func__ << "could not set CURLOPT_SSL_CTX_FUNCTION, got: " << std::to_string(ret);
+    }
   }
   if (sslOptions.ssl_ctx_data() != nullptr) {
-    curl_easy_setopt(handle, CURLOPT_SSL_CTX_DATA,
+    CURLcode ret = curl_easy_setopt(handle, CURLOPT_SSL_CTX_DATA,
                         sslOptions.ssl_ctx_data().get());
+    if (ret != CURLE_OK) {
+      GCP_LOG(ERROR) << __func__ << "could not set CURLOPT_SSL_CTX_FUNCTION, got: " << std::to_string(ret);
+    }
   }
 }
 
